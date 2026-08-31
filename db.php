@@ -14,11 +14,41 @@ try {
     die("Database connection failed: " . $e->getMessage());
 }
 
+// Audit trail table (created on demand so no manual migration step is needed)
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS admin_audit_log (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(191) NOT NULL,
+        action VARCHAR(191) NOT NULL,
+        details TEXT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'success',
+        ip_address VARCHAR(45) NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+} catch (PDOException $e) {
+    // Non-fatal: don't let audit-table provisioning block login/usage.
+}
+
 // Function to force login
 function require_login() {
     if (!isset($_SESSION['admin_user'])) {
         header("Location: /login");
         exit;
+    }
+}
+
+// Records one admin action to the audit trail. Never throws - a logging
+// failure must not block the operation it's trying to record.
+function audit_log($action, $details = null, $status = 'success') {
+    global $pdo;
+    $user = $_SESSION['admin_user'] ?? 'unknown';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    try {
+        $stmt = $pdo->prepare("INSERT INTO admin_audit_log (username, action, details, status, ip_address) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$user, $action, $details, $status, $ip]);
+    } catch (PDOException $e) {
+        // swallow - auditing must never break the request it's observing
     }
 }
 ?>
