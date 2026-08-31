@@ -10,19 +10,12 @@ $DATA_DIR     = __DIR__ . '/data';
 $LOCK_FILE    = $DATA_DIR . '/system.lock';
 $RUNNER       = 'sudo /usr/local/bin/nc-runner'; // The Gatekeeper
 
-// Ensure data directory exists
 if (!is_dir($DATA_DIR)) { mkdir($DATA_DIR, 0755, true); chown($DATA_DIR, 'apache'); }
 
 // ==========================================
-// COMMAND DEFINITIONS
+// COMMAND DEFINITIONS - all occ (Nextcloud) commands live on this page
 // ==========================================
 $COMMANDS = [
-    // --- MODSECURITY (Requires Auth) ---
-    'modsec_status' => ['type' => 'sync', 'cmd' => "$RUNNER modsec_status"],
-    'modsec_on'     => ['type' => 'sync', 'cmd' => "$RUNNER modsec_on", 'auth' => true],
-    'modsec_off'    => ['type' => 'sync', 'cmd' => "$RUNNER modsec_off", 'auth' => true],
-
-    // --- NEXTCLOUD OPERATIONS (No Auth Required - handled by login) ---
     'status'        => ['type' => 'sync', 'cmd' => "$RUNNER occ status"],
     'app_list'      => ['type' => 'sync', 'cmd' => "$RUNNER occ app:list"],
     'maint_on'      => ['type' => 'sync', 'cmd' => "$RUNNER occ maint:on"],
@@ -44,11 +37,10 @@ $COMMANDS = [
     'db_add_pks'     => ['type' => 'async', 'cmd' => "$RUNNER occ db:add-missing-primary-keys", 'log' => 'db_pks.log'],
     'files_cleanup'  => ['type' => 'async', 'cmd' => "$RUNNER occ files:cleanup", 'log' => 'files_cleanup.log'],
 
-    // --- DIAGNOSTICS (Sync / read-only) ---
+    // --- DIAGNOSTICS ---
     'integrity_check'  => ['type' => 'async', 'cmd' => "$RUNNER occ integrity:check-core", 'log' => 'integrity_check.log'],
     'data_fingerprint' => ['type' => 'sync', 'cmd' => "$RUNNER occ maintenance:data-fingerprint"],
     'config_list'      => ['type' => 'sync', 'cmd' => "$RUNNER occ config:list system"],
-    'firewall_status'  => ['type' => 'sync', 'cmd' => "$RUNNER firewall_status"],
 
     // --- USER MANAGEMENT ---
     'user_enable'         => ['type' => 'sync', 'cmd' => "$RUNNER occ user:enable"],
@@ -56,17 +48,10 @@ $COMMANDS = [
     'user_delete'         => ['type' => 'sync', 'cmd' => "$RUNNER occ user:delete", 'auth' => true],
     'user_2fa_disable'    => ['type' => 'sync', 'cmd' => "$RUNNER occ twofactorauth:disable"],
     'user_reset_password' => ['type' => 'sync', 'cmd' => "$RUNNER occ user:resetpassword"],
-
-    // --- SYSTEM ADMIN (Requires Security Password) ---
-    'sys_update'    => ['type' => 'async', 'cmd' => "$RUNNER sys_update", 'log' => 'sys_update.log', 'auth' => true],
-    'reboot'        => ['type' => 'async', 'cmd' => "$RUNNER reboot", 'log' => 'reboot.log', 'auth' => true],
-    'restart_httpd' => ['type' => 'sync', 'cmd' => "$RUNNER restart_httpd", 'auth' => true],
-    'restart_php'   => ['type' => 'sync', 'cmd' => "$RUNNER restart_php", 'auth' => true],
-    'kill_stuck'    => ['type' => 'sync', 'cmd' => "$RUNNER kill_stuck"],
 ];
 
 // Actions that are read-only / polled on an interval - kept out of the audit trail to avoid noise.
-$AUDIT_SKIP = ['status', 'app_list', 'modsec_status', 'firewall_status'];
+$AUDIT_SKIP = ['status', 'app_list'];
 
 // ==========================================
 // BACKEND LOGIC
@@ -83,7 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 2. Helper Actions
     if ($action==='force_unlock'){if(file_exists($LOCK_FILE))unlink($LOCK_FILE);audit_log('force_unlock');echo json_encode(['status'=>'done','output'=>'Unlocked']);exit;}
-    if ($action==='get_server_stats'){$f=preg_split("/\s+/",trim(shell_exec('free -m')));$dt=disk_total_space("/");$du=$dt-disk_free_space("/");echo json_encode(['mem_percent'=>round(($f[8]/$f[7])*100),'mem_text'=>"{$f[8]}MB / {$f[7]}MB",'disk_percent'=>round(($du/$dt)*100),'disk_text'=>round($du/1e9,2)."GB",'uptime'=>shell_exec('uptime -p')]);exit;}
     if ($action==='get_state'){if(file_exists($LOCK_FILE))echo json_encode(['status'=>'busy','log_file'=>file_get_contents($LOCK_FILE)]);else echo json_encode(['status'=>'idle']);exit;}
     if ($action==='read_log'){$l=$DATA_DIR.'/'.basename($input['file']);if(file_exists($l))echo json_encode(['output'=>shell_exec("tail -n 50 ".escapeshellarg($l))]);else echo json_encode(['output'=>'Log missing...']);exit;}
 
@@ -141,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$pageTitle = 'Nextcloud Operations';
+$pageTitle = 'Nextcloud';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="dark">
@@ -151,169 +135,115 @@ $pageTitle = 'Nextcloud Operations';
 <body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
     <?php require __DIR__ . '/partials/loader.php'; ?>
 
-    <?php $activePage = 'nextcloud'; $showStatusBar = true; require __DIR__ . '/partials/nav.php'; ?>
+    <?php $activePage = 'nextcloud'; $activeChild = 'nextcloud'; $showStatusBar = true; require __DIR__ . '/partials/nav.php'; ?>
 
     <main class="flex-1 min-w-0 p-6 lg:p-10">
         <div class="max-w-[1500px] mx-auto">
             <div class="mb-8">
-                <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Nextcloud Operations</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-500 font-mono mt-1">one-click occ commands &amp; system control</p>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Nextcloud</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-500 font-mono mt-1">one-click occ commands</p>
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                <div class="xl:col-span-8 flex flex-col">
-                    <div class="flex gap-1 mb-6 border-b border-gray-200 dark:border-line overflow-x-auto">
-                        <button onclick="switchTab('tab-nextcloud')" class="tab-btn active px-4 py-2.5 transition whitespace-nowrap">NEXTCLOUD</button>
-                        <button onclick="switchTab('tab-system')" class="tab-btn px-4 py-2.5 transition whitespace-nowrap">SYSTEM_ADMIN</button>
-                        <button onclick="switchTab('tab-health')" class="tab-btn px-4 py-2.5 transition whitespace-nowrap">SERVER_HEALTH</button>
+                <div class="xl:col-span-8 flex flex-col space-y-6">
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="icon-badge bg-violet-500/10 text-violet-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 4a2 2 0 114 0v1h2.5a1.5 1.5 0 011.5 1.5V9h1a2 2 0 110 4h-1v2.5a1.5 1.5 0 01-1.5 1.5H15v1a2 2 0 11-4 0v-1h-2.5A1.5 1.5 0 017 15.5V13H5.5A1.5 1.5 0 014 11.5v-3A1.5 1.5 0 015.5 7H7V5.5A1.5 1.5 0 018.5 4H11v0z"/></svg></div>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Plugin Manager</h2>
+                            </div>
+                            <span class="section-eyebrow">occ app:*</span>
+                        </div>
+                        <div class="flex gap-3 mb-3">
+                            <button onclick="runCmd('app_enable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-green flex-1">Enable</button>
+                            <button onclick="runCmd('app_disable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-red flex-1">Disable</button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="runCmd('app_list')" class="btn btn-neutral w-full">List Apps</button>
+                            <button onclick="runCmd('update_apps')" class="btn btn-primary w-full col-span-2">Update All Apps</button>
+                        </div>
                     </div>
 
-                    <div id="tab-nextcloud" class="tab-content space-y-6 fade-in">
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="icon-badge bg-fuchsia-500/10 text-fuchsia-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-white">User Management</h2>
+                            </div>
+                            <span class="section-eyebrow">occ user:*</span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <button onclick="runCmd('user_enable',true,false,'Enable User','Username')" class="btn btn-outline-green w-full">Enable</button>
+                            <button onclick="runCmd('user_disable',true,false,'Disable User','Username')" class="btn btn-outline-red w-full">Disable</button>
+                            <button onclick="runCmd('user_2fa_disable',true,false,'Disable 2FA For','Username')" class="btn btn-neutral w-full">Disable 2FA</button>
+                            <button onclick="runCmd('user_reset_password',true,false,'Reset Password For','Username')" class="btn btn-primary w-full">Reset Password</button>
+                        </div>
+                        <button onclick="runCmd('user_delete',true,true,'Delete User','Username')" class="btn btn-danger w-full mt-3">Delete User</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="card p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="icon-badge bg-violet-500/10 text-violet-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 4a2 2 0 114 0v1h2.5a1.5 1.5 0 011.5 1.5V9h1a2 2 0 110 4h-1v2.5a1.5 1.5 0 01-1.5 1.5H15v1a2 2 0 11-4 0v-1h-2.5A1.5 1.5 0 017 15.5V13H5.5A1.5 1.5 0 014 11.5v-3A1.5 1.5 0 015.5 7H7V5.5A1.5 1.5 0 018.5 4H11v0z"/></svg></div>
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Plugin Manager</h2>
+                                    <div class="icon-badge bg-blue-500/10 text-blue-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.077-3.078a6 6 0 01-7.94 7.94l-6.816 6.816a2.121 2.121 0 01-3-3l6.816-6.816a6 6 0 017.94-7.94l-3.07 3.07z"/></svg></div>
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Maintenance</h2>
                                 </div>
-                                <span class="section-eyebrow">occ app:*</span>
+                                <span class="section-eyebrow">Routine</span>
                             </div>
-                            <div class="flex flex-col sm:flex-row gap-3 mb-3">
-                                <div class="flex gap-3 flex-1">
-                                    <button onclick="runCmd('app_enable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-green flex-1">Enable</button>
-                                    <button onclick="runCmd('app_disable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-red flex-1">Disable</button>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-3">
-                                <button onclick="runCmd('app_list')" class="btn btn-neutral w-full">List Apps</button>
-                                <button onclick="runCmd('update_apps')" class="btn btn-primary w-full col-span-2">Update All Apps</button>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="runCmd('status')" class="btn btn-neutral w-full">Status</button>
+                                <button onclick="runCmd('cache_clear')" class="btn btn-neutral w-full">Clear Cache</button>
+                                <button onclick="runCmd('trash_clean')" class="btn btn-neutral w-full">Empty Trash</button>
+                                <button onclick="runCmd('db_missing')" class="btn btn-neutral w-full">DB Indices</button>
+                                <button onclick="runCmd('maint_on')" class="btn btn-outline-red w-full">Maint. ON</button>
+                                <button onclick="runCmd('maint_off')" class="btn btn-outline-green w-full">Maint. OFF</button>
                             </div>
                         </div>
-
                         <div class="card p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="icon-badge bg-fuchsia-500/10 text-fuchsia-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">User Management</h2>
+                                    <div class="icon-badge bg-amber-500/10 text-amber-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Heavy Operations</h2>
                                 </div>
-                                <span class="section-eyebrow">occ user:*</span>
+                                <span class="section-eyebrow">Async</span>
                             </div>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <button onclick="runCmd('user_enable',true,false,'Enable User','Username')" class="btn btn-outline-green w-full">Enable</button>
-                                <button onclick="runCmd('user_disable',true,false,'Disable User','Username')" class="btn btn-outline-red w-full">Disable</button>
-                                <button onclick="runCmd('user_2fa_disable',true,false,'Disable 2FA For','Username')" class="btn btn-neutral w-full">Disable 2FA</button>
-                                <button onclick="runCmd('user_reset_password',true,false,'Reset Password For','Username')" class="btn btn-primary w-full">Reset Password</button>
-                            </div>
-                            <button onclick="runCmd('user_delete',true,true,'Delete User','Username')" class="btn btn-danger w-full mt-3">Delete User</button>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="card p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="icon-badge bg-blue-500/10 text-blue-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.077-3.078a6 6 0 01-7.94 7.94l-6.816 6.816a2.121 2.121 0 01-3-3l6.816-6.816a6 6 0 017.94-7.94l-3.07 3.07z"/></svg></div>
-                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Maintenance</h2>
-                                    </div>
-                                    <span class="section-eyebrow">Routine</span>
-                                </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <button onclick="runCmd('status')" class="btn btn-neutral w-full">Status</button>
-                                    <button onclick="runCmd('cache_clear')" class="btn btn-neutral w-full">Clear Cache</button>
-                                    <button onclick="runCmd('trash_clean')" class="btn btn-neutral w-full">Empty Trash</button>
-                                    <button onclick="runCmd('db_missing')" class="btn btn-neutral w-full">DB Indices</button>
-                                    <button onclick="runCmd('maint_on')" class="btn btn-outline-red w-full">Maint. ON</button>
-                                    <button onclick="runCmd('maint_off')" class="btn btn-outline-green w-full">Maint. OFF</button>
-                                </div>
-                            </div>
-                            <div class="card p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="icon-badge bg-amber-500/10 text-amber-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Heavy Operations</h2>
-                                    </div>
-                                    <span class="section-eyebrow">Async</span>
-                                </div>
-                                <div class="space-y-3">
-                                    <button onclick="runCmd('files_scan')" class="btn btn-primary w-full">Scan All Files</button>
-                                    <button onclick="runCmd('preview_gen')" class="btn btn-primary w-full">Gen Previews</button>
-                                    <button onclick="confirmAction('Truncate Log?', 'log_truncate')" class="btn btn-outline-red w-full">Truncate Log</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="card p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="icon-badge bg-orange-500/10 text-orange-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5.5a4.5 4.5 0 016.02 4.24l-2.86 2.86a1 1 0 000 1.41l2.83 2.83a4.5 4.5 0 01-6.32-6.32l-4.79-4.79a4.5 4.5 0 00-1.4 8.06l-4.3 4.3a1.5 1.5 0 002.12 2.12l4.3-4.3a4.5 4.5 0 008.06-1.4"/></svg></div>
-                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Repair</h2>
-                                    </div>
-                                    <span class="section-eyebrow">Async</span>
-                                </div>
-                                <div class="space-y-3">
-                                    <button onclick="runCmd('maint_repair')" class="btn btn-primary w-full">Maintenance Repair</button>
-                                    <button onclick="runCmd('db_add_columns')" class="btn btn-neutral w-full">Add Missing DB Columns</button>
-                                    <button onclick="runCmd('db_add_pks')" class="btn btn-neutral w-full">Add Missing Primary Keys</button>
-                                    <button onclick="runCmd('files_cleanup')" class="btn btn-neutral w-full">Cleanup File Cache</button>
-                                </div>
-                            </div>
-                            <div class="card p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="icon-badge bg-sky-500/10 text-sky-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Diagnostics</h2>
-                                    </div>
-                                    <span class="section-eyebrow">Read-only</span>
-                                </div>
-                                <div class="space-y-3">
-                                    <button onclick="runCmd('integrity_check')" class="btn btn-neutral w-full">Core Integrity Check</button>
-                                    <button onclick="runCmd('data_fingerprint')" class="btn btn-neutral w-full">Update Data Fingerprint</button>
-                                    <button onclick="runCmd('config_list')" class="btn btn-neutral w-full">View System Config</button>
-                                    <button onclick="runCmd('firewall_status')" class="btn btn-neutral w-full">Firewall Status</button>
-                                </div>
+                            <div class="space-y-3">
+                                <button onclick="runCmd('files_scan')" class="btn btn-primary w-full">Scan All Files</button>
+                                <button onclick="runCmd('preview_gen')" class="btn btn-primary w-full">Gen Previews</button>
+                                <button onclick="confirmAction('Truncate Log?', 'log_truncate')" class="btn btn-outline-red w-full">Truncate Log</button>
                             </div>
                         </div>
                     </div>
 
-                    <div id="tab-system" class="tab-content hidden space-y-6">
-                        <div class="card card-accent p-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Stealth Mode</h2>
-                                </div>
-                                <div id="modsec-badge" class="badge bg-gray-100 dark:bg-surface2 text-gray-500 dark:text-gray-400">STATUS UNKNOWN</div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <button onclick="toggleModSec('modsec_on', true)" class="btn btn-violet py-3">ENABLE LOCK</button>
-                                <button onclick="toggleModSec('modsec_off', true)" class="btn btn-neutral py-3">DISABLE LOCK</button>
-                            </div>
-                        </div>
-                        <div class="card p-6" style="border-top:2px solid #e11d48">
-                            <h2 class="text-base font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">Root Controls <span class="badge bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300">Auth Required</span></h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="space-y-3">
-                                    <h3 class="section-eyebrow mb-1">Service Management</h3>
-                                    <button onclick="runCmd('restart_httpd', false, true)" class="btn btn-neutral w-full justify-start">Restart Apache</button>
-                                    <button onclick="runCmd('restart_php', false, true)" class="btn btn-neutral w-full justify-start">Restart PHP-FPM</button>
-                                    <button onclick="confirmAction('Kill stuck Nextcloud processes?','kill_stuck')" class="btn btn-outline-red w-full justify-start">Kill Stuck Processes</button>
-                                </div>
-                                <div class="space-y-3">
-                                    <h3 class="section-eyebrow mb-1">OS Operations</h3>
-                                    <button onclick="confirmAction('Run DNF Update?','sys_update', false, true)" class="btn btn-neutral w-full justify-between"><span>Run DNF Update</span><span class="badge bg-gray-100 dark:bg-surface2">SLOW</span></button>
-                                    <button onclick="confirmAction('REBOOT SERVER?','reboot', true, true)" class="btn btn-danger w-full justify-between"><span>REBOOT SERVER</span><span class="badge bg-white/20">DANGER</span></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="tab-health" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="card p-6">
-                            <div class="flex justify-between mb-6"><h2 class="text-base font-bold text-gray-900 dark:text-white">Live Resources</h2><button onclick="fetchStats()" class="btn btn-neutral py-1.5 px-3 text-xs">Refresh</button></div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="bg-gray-50 dark:bg-surface2 p-4 rounded-lg border border-gray-200 dark:border-line"><div class="flex justify-between mb-2 text-sm"><span class="text-gray-500 dark:text-gray-400 font-mono">RAM</span><span id="ram-text" class="text-gray-900 dark:text-white font-mono">...</span></div><div class="w-full bg-gray-200 dark:bg-line h-1.5 rounded-full"><div id="ram-bar" class="bg-violet-500 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div></div></div>
-                                <div class="bg-gray-50 dark:bg-surface2 p-4 rounded-lg border border-gray-200 dark:border-line"><div class="flex justify-between mb-2 text-sm"><span class="text-gray-500 dark:text-gray-400 font-mono">DISK (/)</span><span id="disk-text" class="text-gray-900 dark:text-white font-mono">...</span></div><div class="w-full bg-gray-200 dark:bg-line h-1.5 rounded-full"><div id="disk-bar" class="bg-accent-500 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div></div></div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="icon-badge bg-orange-500/10 text-orange-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5.5a4.5 4.5 0 016.02 4.24l-2.86 2.86a1 1 0 000 1.41l2.83 2.83a4.5 4.5 0 01-6.32-6.32l-4.79-4.79a4.5 4.5 0 00-1.4 8.06l-4.3 4.3a1.5 1.5 0 002.12 2.12l4.3-4.3a4.5 4.5 0 008.06-1.4"/></svg></div>
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Repair</h2>
+                                </div>
+                                <span class="section-eyebrow">Async</span>
                             </div>
-                            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-line text-sm font-mono"><span class="text-gray-500">uptime:</span> <span id="uptime-text" class="ml-2 text-gray-900 dark:text-white">checking...</span></div>
+                            <div class="space-y-3">
+                                <button onclick="runCmd('maint_repair')" class="btn btn-primary w-full">Maintenance Repair</button>
+                                <button onclick="runCmd('db_add_columns')" class="btn btn-neutral w-full">Add Missing DB Columns</button>
+                                <button onclick="runCmd('db_add_pks')" class="btn btn-neutral w-full">Add Missing Primary Keys</button>
+                                <button onclick="runCmd('files_cleanup')" class="btn btn-neutral w-full">Cleanup File Cache</button>
+                            </div>
+                        </div>
+                        <div class="card p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="icon-badge bg-sky-500/10 text-sky-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Diagnostics</h2>
+                                </div>
+                                <span class="section-eyebrow">occ</span>
+                            </div>
+                            <div class="space-y-3">
+                                <button onclick="runCmd('integrity_check')" class="btn btn-neutral w-full">Core Integrity Check</button>
+                                <button onclick="runCmd('data_fingerprint')" class="btn btn-neutral w-full">Update Data Fingerprint</button>
+                                <button onclick="runCmd('config_list')" class="btn btn-neutral w-full">View System Config</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -333,6 +263,7 @@ $pageTitle = 'Nextcloud Operations';
 
     <script>
         const TOKEN = '<?= $SECRET_TOKEN ?>';
+        const ENDPOINT = 'nextcloud.php';
         let pollInterval = null;
         let isBusy = false;
         const terminal = document.getElementById('terminal');
@@ -347,7 +278,6 @@ $pageTitle = 'Nextcloud Operations';
             }
         }
 
-        // SweetAlert Helper
         async function confirmAction(msg, action, isDanger = false, needsAuth = false) {
             const result = await Swal.fire({
                 title: 'Confirmation',
@@ -369,62 +299,7 @@ $pageTitle = 'Nextcloud Operations';
         window.addEventListener('DOMContentLoaded', () => {
             checkSystemState();
             setInterval(checkSystemState, 3000);
-            fetchStats();
-            checkModSecStatus();
-            setInterval(checkModSecStatus, 5000);
         });
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        async function checkModSecStatus() {
-            try {
-                const res = await fetch('nextcloud.php', { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'modsec_status' }) });
-                const data = await res.json();
-                const badge = document.getElementById('modsec-badge');
-                if (data.output && data.output.trim() === 'LOCKED') {
-                    badge.className = "badge bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 status-dot-pulse";
-                    badge.innerHTML = "🔒 WAF ACTIVE";
-                } else {
-                    badge.className = "badge bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400";
-                    badge.innerHTML = "🔓 WAF INACTIVE";
-                }
-            } catch (e) {}
-        }
-
-        async function toggleModSec(action, needsAuth = false) {
-            const result = await Swal.fire({
-                title: 'WAF Configuration',
-                text: 'Are you sure you want to update ModSecurity rules?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#0d9488',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, update',
-                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
-            });
-            if (!result.isConfirmed) return;
-
-            await runCmd(action, false, needsAuth);
-            setTimeout(checkModSecStatus, 1000);
-        }
-
-        async function fetchStats() {
-            try {
-                const res = await fetch('nextcloud.php', { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'get_server_stats' }) });
-                const data = await res.json();
-                document.getElementById('ram-text').textContent = data.mem_text;
-                document.getElementById('ram-bar').style.width = data.mem_percent + '%';
-                document.getElementById('disk-text').textContent = data.disk_text;
-                document.getElementById('disk-bar').style.width = data.disk_percent + '%';
-                document.getElementById('uptime-text').textContent = data.uptime;
-            } catch (e) {}
-        }
 
         function setBusyState(busy, logFile = null) {
             isBusy = busy;
@@ -458,13 +333,13 @@ $pageTitle = 'Nextcloud Operations';
             });
             if (!result.isConfirmed) return;
 
-            await fetch('nextcloud.php', { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'force_unlock' }) });
+            await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'force_unlock' }) });
             setBusyState(false);
         }
 
         async function checkSystemState() {
             try {
-                const response = await fetch('nextcloud.php', { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'get_state' }) });
+                const response = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'get_state' }) });
                 const data = await response.json();
                 if (data.status === 'busy' && !isBusy) setBusyState(true, data.log_file);
                 else if (data.status === 'idle' && isBusy) setBusyState(false);
@@ -487,7 +362,6 @@ $pageTitle = 'Nextcloud Operations';
             let arg = null;
             let pass = null;
 
-            // 1. Handle Argument
             if (reqArg) {
                 const { value: argValue } = await Swal.fire({
                     title: argTitle,
@@ -502,7 +376,6 @@ $pageTitle = 'Nextcloud Operations';
                 arg = argValue;
             }
 
-            // 2. Handle Authentication (Using SweetAlert2)
             if (needsAuth) {
                 const { value: password } = await Swal.fire({
                     title: 'Root Privilege Required',
@@ -524,14 +397,9 @@ $pageTitle = 'Nextcloud Operations';
             log(`Executing: ${action}...`, 'system');
             setBusyState(true);
             try {
-                const response = await fetch('nextcloud.php', {
+                const response = await fetch(ENDPOINT, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        token: TOKEN,
-                        action: action,
-                        arg: arg,
-                        sec_pass: pass
-                    })
+                    body: JSON.stringify({ token: TOKEN, action: action, arg: arg, sec_pass: pass })
                 });
                 const data = await response.json();
                 if (data.error) {
@@ -554,7 +422,7 @@ $pageTitle = 'Nextcloud Operations';
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(async () => {
                 try {
-                    const res = await fetch('nextcloud.php', { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'read_log', file: filename }) });
+                    const res = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'read_log', file: filename }) });
                     const data = await res.json();
                     if(data.output) {
                         terminal.innerHTML = '';
