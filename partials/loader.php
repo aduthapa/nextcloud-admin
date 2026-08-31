@@ -4,6 +4,16 @@
 // Respects localStorage.loaderLogo ('off' hides the brand mark, set via the
 // sidebar's "Loader logo" switch) through the .no-loader-logo class on <html>,
 // set synchronously in partials/head.php / login.php before first paint.
+// Stays visible for at least $minLoaderMs (Settings > Loader), so it doesn't
+// flash instantly on a fast/cached load - $pdo is already in scope here since
+// every including page requires db.php before this partial.
+$minLoaderMs = 2000;
+try {
+    $row = $pdo->query("SELECT min_loader_ms FROM ui_settings WHERE id=1")->fetch(PDO::FETCH_ASSOC);
+    if ($row) $minLoaderMs = max(0, (int) $row['min_loader_ms']);
+} catch (Exception $e) {
+    // fall back to the 2s default above
+}
 ?>
 <style>
     .no-loader-logo .loader-with-logo { display: none !important; }
@@ -14,6 +24,7 @@
     .loader-ring { animation: loaderSpin 1.1s linear infinite; }
     @keyframes loaderSpin { to { transform: rotate(360deg); } }
 </style>
+<script>window.__loaderStart = Date.now();</script>
 <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
     <div class="loader-with-logo flex flex-col items-center">
         <div class="relative mb-5">
@@ -31,9 +42,16 @@
     </div>
 </div>
 <script>
-    window.addEventListener('load', () => {
-        const l = document.getElementById('global-loader');
-        l.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(() => l.style.display = 'none', 500);
-    });
+    (function() {
+        const MIN_MS = <?= (int) $minLoaderMs ?>;
+        function hide() {
+            const l = document.getElementById('global-loader');
+            l.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => l.style.display = 'none', 500);
+        }
+        window.addEventListener('load', () => {
+            const elapsed = Date.now() - (window.__loaderStart || Date.now());
+            setTimeout(hide, Math.max(0, MIN_MS - elapsed));
+        });
+    })();
 </script>
