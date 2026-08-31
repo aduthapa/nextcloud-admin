@@ -8,7 +8,7 @@ if (!is_dir($LOG_DIR)) { mkdir($LOG_DIR, 0755, true); chown($LOG_DIR, 'apache');
 // --- Backend Logic ---
 $TOOLS = [
     'lynis' => [
-        'name' => 'Lynis', 'bin' => '/usr/bin/lynis', 
+        'name' => 'Lynis', 'bin' => '/usr/bin/lynis',
         'check' => 'test -f /usr/bin/lynis',
         'install' => 'sudo dnf install -y lynis',
         'remove' => 'sudo dnf remove -y lynis',
@@ -16,7 +16,7 @@ $TOOLS = [
         'log' => '/var/log/lynis.log' // Lynis default
     ],
     'chkrootkit' => [
-        'name' => 'Chkrootkit', 'bin' => '/usr/sbin/chkrootkit', 
+        'name' => 'Chkrootkit', 'bin' => '/usr/sbin/chkrootkit',
         'check' => 'test -f /usr/sbin/chkrootkit',
         'install' => 'sudo dnf install -y chkrootkit',
         'remove' => 'sudo dnf remove -y chkrootkit',
@@ -24,7 +24,7 @@ $TOOLS = [
         'log' => $LOG_DIR.'/chkrootkit.log' // Custom log
     ],
     'rkhunter' => [
-        'name' => 'Rootkit Hunter', 'bin' => '/usr/bin/rkhunter', 
+        'name' => 'Rootkit Hunter', 'bin' => '/usr/bin/rkhunter',
         'check' => 'test -f /usr/bin/rkhunter',
         'install' => 'sudo dnf install -y rkhunter',
         'remove' => 'sudo dnf remove -y rkhunter',
@@ -32,7 +32,7 @@ $TOOLS = [
         'log' => '/var/log/rkhunter.log'
     ],
     'trivy' => [
-        'name' => 'Trivy', 'bin' => '/usr/local/bin/trivy', 
+        'name' => 'Trivy', 'bin' => '/usr/local/bin/trivy',
         'check' => 'test -f /usr/local/bin/trivy',
         'install' => 'sudo sh -c "curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin"',
         'remove' => 'sudo rm -f /usr/local/bin/trivy',
@@ -40,7 +40,7 @@ $TOOLS = [
         'log' => $LOG_DIR.'/trivy.log'
     ],
     'lmd' => [
-        'name' => 'Linux Malware Detect', 'bin' => '/usr/local/maldetect/maldet', 
+        'name' => 'Linux Malware Detect', 'bin' => '/usr/local/maldetect/maldet',
         'check' => 'test -d /usr/local/maldetect',
         'install' => 'sudo sh -c "wget -q http://www.rfxn.com/downloads/maldetect-current.tar.gz && tar -xzf maldetect-current.tar.gz && cd maldetect-* && ./install.sh && cd .. && rm -rf maldetect*"',
         'remove' => 'sudo sh -c "rm -rf /usr/local/maldetect /usr/local/bin/maldet"',
@@ -53,10 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     if (($input['token'] ?? '') !== $SECRET_TOKEN) exit(json_encode(['error'=>'Invalid Token']));
-    
+
     $action = $input['action'];
     $tool = $input['tool'] ?? '';
-    
+
     if ($action === 'get_status') {
         $status = [];
         foreach ($TOOLS as $k => $v) {
@@ -73,10 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Run install async but frontend will lock
         $cmd = $cfg['install'] . ' > ' . $LOG_DIR . '/install_'.$tool.'.log 2>&1';
         shell_exec($cmd);
+        audit_log('security_tool_install', "tool=$tool");
         echo json_encode(['status'=>'done', 'output'=>'Installation completed.']);
     }
     elseif ($action === 'remove') {
         shell_exec($cfg['remove']);
+        audit_log('security_tool_remove', "tool=$tool");
         echo json_encode(['status'=>'done', 'output'=>'Removed.']);
     }
     elseif ($action === 'scan') {
@@ -84,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Async scan
         $cmd = 'nohup sh -c "'.$cfg['scan'].' > '.$logTarget.'" >/dev/null 2>&1 & echo $!';
         shell_exec($cmd);
+        audit_log('security_scan_start', "tool=$tool");
         echo json_encode(['status'=>'started', 'log_file'=>$logTarget]);
     }
     elseif ($action === 'read_log') {
@@ -97,38 +100,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     exit;
 }
+
+$pageTitle = 'Security Center';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8"><title>Security Center</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        tailwind.config={darkMode:'class',theme:{extend:{colors:{nc:'#0082c9',nc_dark:'#005f92',term:'#0c0c0c'}}}}; 
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
-    <style>
-        body { transition: background-color 0.3s, color 0.3s; }
-        ::-webkit-scrollbar{width:8px;height:8px}
-        ::-webkit-scrollbar-track{background:rgba(0,0,0,0.1)}
-        .dark ::-webkit-scrollbar-track{background:#1a1a1a}
-        ::-webkit-scrollbar-thumb{background:#888;border-radius:4px}
-        .dark ::-webkit-scrollbar-thumb{background:#444}
-        .terminal-box { height: 500px; overflow-y: auto; }
-        /* Lock overlay */
-        #install-lock { backdrop-filter: blur(5px); }
-    </style>
+<?php require __DIR__ . '/partials/head.php'; ?>
+<style>
+    .terminal-box { height: 500px; }
+    #install-lock { backdrop-filter: blur(5px); }
+</style>
 </head>
 <body class="font-sans min-h-screen p-4 lg:p-8 bg-gray-100 text-gray-900 dark:bg-[#111827] dark:text-gray-200">
     <div id="global-loader" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center transition-opacity duration-500">
         <div class="relative flex flex-col items-center"><div class="w-16 h-16 border-4 border-blue-900/30 border-t-[#0082c9] rounded-full animate-spin"></div><div class="mt-4 text-[#0082c9] font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div></div>
     </div>
-    
+
     <div id="install-lock" class="hidden fixed inset-0 z-[200] bg-white/80 dark:bg-black/80 flex flex-col items-center justify-center text-center transition-colors">
         <div class="w-20 h-20 border-4 border-red-900/50 border-t-red-500 rounded-full animate-spin mb-6"></div>
         <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">INSTALLING COMPONENT</h2>
@@ -137,46 +125,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="max-w-[1600px] mx-auto">
-        <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-300 dark:border-gray-700">
+        <div class="flex flex-wrap gap-4 justify-between items-center mb-8 pb-4 border-b border-gray-300 dark:border-gray-700">
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold tracking-tight text-gray-800 dark:text-white">Security<span class="text-red-600 dark:text-red-500 font-light">Center</span></h1>
             </div>
-            <div class="flex items-center gap-4">
-                <button onclick="toggleTheme()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-yellow-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
-                    <svg id="moon-icon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    <svg id="sun-icon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                </button>
-                <nav class="flex gap-2 bg-white dark:bg-gray-800/50 p-1 rounded-lg border border-gray-300 dark:border-gray-700 shadow-sm">
-                    <a href="/" class="nav-link px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Dashboard</a>
-                    <a href="/database" class="nav-link px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Database</a>
-                    <a href="/settings" class="nav-link px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Settings</a>
-                    <a href="/ncconfig" class="nav-link px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Config</a>
-                    <a href="/security.php" class="nav-link px-4 py-1.5 rounded-md text-sm font-medium bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-200 shadow-sm border border-red-200 dark:border-red-800/50">Security</a>
-                </nav>
-                <a href="/?logout=true" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition">Logout</a>
-            </div>
+            <?php $activePage = 'security'; require __DIR__ . '/partials/nav.php'; ?>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-3 space-y-4">
                 <?php foreach($TOOLS as $key => $tool): ?>
-                <div id="card-<?= $key ?>" class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-lg relative overflow-hidden group transition hover:border-gray-400 dark:hover:border-gray-600">
+                <div id="card-<?= $key ?>" class="card p-4 relative overflow-hidden group transition hover:border-gray-400 dark:hover:border-gray-600">
                     <div class="absolute top-0 right-0 p-2">
                         <div id="status-dot-<?= $key ?>" class="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600"></div>
                     </div>
                     <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1"><?= $tool['name'] ?></h3>
                     <p class="text-xs text-gray-500 mb-4 font-mono">Binary: <?= basename($tool['bin']) ?></p>
-                    
+
                     <div class="flex flex-col gap-2" id="actions-<?= $key ?>">
-                        <button onclick="installTool('<?= $key ?>')" id="btn-inst-<?= $key ?>" class="w-full py-2 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-800 dark:text-red-300 text-xs font-bold rounded border border-red-200 dark:border-red-800/50 transition">INSTALL NOW</button>
-                        <button onclick="openTab('<?= $key ?>')" id="btn-open-<?= $key ?>" class="hidden w-full py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-xs font-bold rounded border border-gray-300 dark:border-gray-600 transition">OPEN PANEL</button>
+                        <button onclick="installTool('<?= $key ?>')" id="btn-inst-<?= $key ?>" class="btn btn-soft-red w-full text-xs">INSTALL NOW</button>
+                        <button onclick="openTab('<?= $key ?>')" id="btn-open-<?= $key ?>" class="hidden btn btn-neutral w-full text-xs">OPEN PANEL</button>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
 
             <div class="lg:col-span-9">
-                <div id="panel-welcome" class="bg-white dark:bg-gray-800 rounded-xl p-10 border border-gray-200 dark:border-gray-700 text-center h-full flex flex-col items-center justify-center opacity-50">
+                <div id="panel-welcome" class="card p-10 text-center h-full flex flex-col items-center justify-center opacity-60">
                     <svg class="w-20 h-20 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                     <h2 class="text-2xl font-bold text-gray-500 dark:text-gray-400">Select a Security Tool</h2>
                     <p class="text-gray-500 mt-2">Install tools via the sidebar to begin scanning.</p>
@@ -184,12 +159,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <?php foreach($TOOLS as $key => $tool): ?>
                 <div id="panel-<?= $key ?>" class="hidden flex flex-col h-full space-y-6">
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-xl">
+                    <div class="card p-6 shadow-xl">
                         <div class="flex justify-between items-start mb-6">
                             <div>
                                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
-                                    <?= $tool['name'] ?> 
-                                    <span class="text-xs bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 px-2 py-1 rounded border border-green-200 dark:border-green-800">INSTALLED</span>
+                                    <?= $tool['name'] ?>
+                                    <span class="badge bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800">INSTALLED</span>
                                 </h2>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Scanner Ready. Default mode is <strong>Detect & Report</strong>.</p>
                             </div>
@@ -197,11 +172,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <button onclick="runScan('<?= $key ?>')" class="bg-blue-600 hover:bg-blue-500 text-white py-4 px-6 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center justify-center gap-3 transition transform active:scale-95">
+                            <button onclick="runScan('<?= $key ?>')" class="btn btn-primary py-4 text-base">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                                 RUN SCAN
                             </button>
-                            <button onclick="fetchLog('<?= $key ?>')" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-4 px-6 rounded-xl font-bold border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-3 transition">
+                            <button onclick="fetchLog('<?= $key ?>')" class="btn btn-neutral py-4 text-base">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 VIEW REPORT
                             </button>
@@ -245,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const l = document.getElementById('global-loader');
             l.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => l.style.display = 'none', 500);
-            
+
             // Check Tools
             checkTools();
         });
@@ -261,9 +236,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const dot = document.getElementById(`status-dot-${tool}`);
                 const btnInst = document.getElementById(`btn-inst-${tool}`);
                 const btnOpen = document.getElementById(`btn-open-${tool}`);
-                
+
                 if (exists) {
-                    dot.className = "w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]";
+                    dot.className = "w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] status-dot-pulse";
                     btnInst.classList.add('hidden');
                     btnOpen.classList.remove('hidden');
                 } else {
@@ -296,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
             });
             if (!result.isConfirmed) return;
-            
+
             // LOCK UI
             isLocked = true;
             document.getElementById('install-lock').classList.remove('hidden');
@@ -339,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         async function runScan(tool) {
             const term = document.getElementById(`term-${tool}`);
             term.innerText = "Starting scan in background...\n";
-            
+
             const res = await callApi({ action: 'scan', tool: tool });
             if (res.status === 'started') {
                 term.innerText += `Process started. Log file: ${res.log_file}\nFetching live results...`;
