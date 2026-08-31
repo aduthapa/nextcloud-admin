@@ -1,7 +1,7 @@
 <?php
 // Renders the persistent left sidebar: brand, nav links, theme toggle, status pill, session.
 // Requires $activePage: 'dashboard'|'nextcloud'|'database'|'settings'|'config'|'security'|'audit'
-// If $activePage === 'nextcloud', also pass $activeChild: 'nextcloud'|'system-admin'|'server-health'
+// If $activePage === 'nextcloud', also pass $activeChild: 'nextcloud'|'system-admin'|'server-health'|'logs'
 // to highlight which sub-menu item is open (defaults to 'nextcloud').
 // Optional $showStatusBar = true to render the Idle/Busy pill + Force Unlock button.
 $__nav = [
@@ -10,6 +10,7 @@ $__nav = [
         ['nextcloud',     'Nextcloud',     '/nextcloud.php',     '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>'],
         ['system-admin',  'System Admin',  '/system-admin.php',  '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>'],
         ['server-health', 'Server Health', '/server-health.php', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 12h3l2.5 7L13 5l2.5 7H21"/>'],
+        ['logs',          'Logs',          '/logs.php',          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'],
     ]],
     'database'  => ['Database', '/database', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>'],
     'settings'  => ['Settings', '/settings', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>'],
