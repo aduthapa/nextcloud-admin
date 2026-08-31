@@ -117,132 +117,133 @@ $pageTitle = 'NC Dashboard';
 <head>
 <?php require __DIR__ . '/partials/head.php'; ?>
 </head>
-<body class="font-sans min-h-screen p-4 lg:p-8 bg-gray-100 text-gray-900 dark:bg-[#111827] dark:text-gray-200">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-16 h-16 border-4 border-blue-900/30 border-t-[#0082c9] rounded-full animate-spin"></div><div class="mt-4 text-[#0082c9] font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div></div>
+<body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
+    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
+        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div><div class="mt-4 text-accent-400 font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div></div>
     </div>
     <script>
         window.addEventListener('load', () => { const l = document.getElementById('global-loader'); l.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => l.style.display = 'none', 500); });
     </script>
 
-    <div class="max-w-[1600px] mx-auto">
-        <div class="flex flex-wrap gap-4 justify-between items-center mb-8 pb-4 border-b border-gray-300 dark:border-gray-700">
-            <div class="flex items-center gap-3">
-                <div class="bg-nc p-2.5 rounded-xl shadow-lg shadow-nc/20"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path></svg></div>
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-800 dark:text-white leading-tight">Nextcloud<span class="text-gray-500 font-light">Admin</span></h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-500">Logged in as <span class="font-semibold text-gray-700 dark:text-gray-300"><?= htmlspecialchars($_SESSION['admin_user']) ?></span></p>
-                </div>
+    <?php $activePage = 'dashboard'; $showStatusBar = true; require __DIR__ . '/partials/nav.php'; ?>
+
+    <main class="flex-1 min-w-0 p-6 lg:p-10">
+        <div class="max-w-[1500px] mx-auto">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Dashboard</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-500 font-mono mt-1">nextcloud operations &amp; system control</p>
             </div>
-            <?php $activePage = 'dashboard'; $showStatusBar = true; require __DIR__ . '/partials/nav.php'; ?>
-        </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div class="xl:col-span-8 flex flex-col">
-                <div class="flex space-x-1 mb-6 border-b border-gray-300 dark:border-gray-700 overflow-x-auto">
-                    <button onclick="switchTab('tab-nextcloud')" class="tab-btn active px-4 py-2 font-medium transition whitespace-nowrap">☁️ Nextcloud</button>
-                    <button onclick="switchTab('tab-system')" class="tab-btn px-4 py-2 font-medium transition whitespace-nowrap">⚙️ System Admin</button>
-                    <button onclick="switchTab('tab-health')" class="tab-btn px-4 py-2 font-medium transition whitespace-nowrap">📊 Server Health</button>
-                </div>
-
-                <div id="tab-nextcloud" class="tab-content space-y-6 fade-in">
-                    <div class="card p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-bold text-purple-600 dark:text-purple-400">Plugin Manager</h2>
-                            <span class="section-eyebrow">occ app:*</span>
-                        </div>
-                        <div class="flex flex-col sm:flex-row gap-3 mb-3">
-                            <input type="text" id="app_input" placeholder="App ID (e.g. user_saml)" class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc transition">
-                            <div class="flex gap-3">
-                                <button onclick="runCmd('app_enable',true)" class="btn btn-soft-green flex-1 sm:flex-none">Enable</button>
-                                <button onclick="runCmd('app_disable',true)" class="btn btn-soft-red flex-1 sm:flex-none">Disable</button>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3">
-                            <button onclick="runCmd('app_list')" class="btn btn-neutral w-full">List Apps</button>
-                            <button onclick="runCmd('update_apps')" class="btn btn-primary w-full col-span-2">Update All Apps</button>
-                        </div>
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                <div class="xl:col-span-8 flex flex-col">
+                    <div class="flex gap-1 mb-6 border-b border-gray-200 dark:border-line overflow-x-auto">
+                        <button onclick="switchTab('tab-nextcloud')" class="tab-btn active px-4 py-2.5 transition whitespace-nowrap">NEXTCLOUD</button>
+                        <button onclick="switchTab('tab-system')" class="tab-btn px-4 py-2.5 transition whitespace-nowrap">SYSTEM_ADMIN</button>
+                        <button onclick="switchTab('tab-health')" class="tab-btn px-4 py-2.5 transition whitespace-nowrap">SERVER_HEALTH</button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div id="tab-nextcloud" class="tab-content space-y-6 fade-in">
                         <div class="card p-6">
                             <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-lg font-bold text-blue-600 dark:text-blue-400">Maintenance</h2>
-                                <span class="section-eyebrow">Routine</span>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Plugin Manager</h2>
+                                <span class="section-eyebrow">occ app:*</span>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button onclick="runCmd('status')" class="btn btn-neutral w-full">Status</button>
-                                <button onclick="runCmd('cache_clear')" class="btn btn-neutral w-full">Clear Cache</button>
-                                <button onclick="runCmd('trash_clean')" class="btn btn-neutral w-full">Empty Trash</button>
-                                <button onclick="runCmd('db_missing')" class="btn btn-neutral w-full">DB Indices</button>
-                                <button onclick="runCmd('maint_on')" class="btn btn-soft-red w-full">Maint. ON</button>
-                                <button onclick="runCmd('maint_off')" class="btn btn-soft-green w-full">Maint. OFF</button>
+                            <div class="flex flex-col sm:flex-row gap-3 mb-3">
+                                <input type="text" id="app_input" placeholder="App ID (e.g. user_saml)" class="flex-1 bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition">
+                                <div class="flex gap-3">
+                                    <button onclick="runCmd('app_enable',true)" class="btn btn-outline-green flex-1 sm:flex-none">Enable</button>
+                                    <button onclick="runCmd('app_disable',true)" class="btn btn-outline-red flex-1 sm:flex-none">Disable</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-lg font-bold text-yellow-600 dark:text-yellow-400">Heavy Operations</h2>
-                                <span class="section-eyebrow">Async</span>
-                            </div>
-                            <div class="space-y-3">
-                                <button onclick="runCmd('files_scan')" class="btn btn-primary w-full">Scan All Files</button>
-                                <button onclick="runCmd('preview_gen')" class="btn btn-primary w-full">Gen Previews</button>
-                                <button onclick="confirmAction('Truncate Log?', 'log_truncate')" class="btn btn-soft-red w-full">Truncate Log</button>
+                            <div class="grid grid-cols-3 gap-3">
+                                <button onclick="runCmd('app_list')" class="btn btn-neutral w-full">List Apps</button>
+                                <button onclick="runCmd('update_apps')" class="btn btn-primary w-full col-span-2">Update All Apps</button>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div id="tab-system" class="tab-content hidden space-y-6">
-                    <div class="card p-6 border-blue-500/40">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center gap-3"><div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg"><svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div><h2 class="text-xl font-bold text-gray-800 dark:text-white">Stealth <span class="text-blue-500 dark:text-blue-400">Mode</span></h2></div>
-                            <div id="modsec-badge" class="badge bg-gray-200 dark:bg-gray-700 text-gray-500 border border-gray-300 dark:border-gray-600">STATUS UNKNOWN</div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="toggleModSec('modsec_on', true)" class="btn btn-soft-blue py-3">ENABLE LOCK</button>
-                            <button onclick="toggleModSec('modsec_off', true)" class="btn btn-neutral py-3">DISABLE LOCK</button>
-                        </div>
-                    </div>
-                    <div class="card p-6 border-red-900/30">
-                        <h2 class="text-xl font-bold mb-6 text-red-600 dark:text-red-400 flex items-center gap-2">Root Controls <span class="badge bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">Auth Required</span></h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-4">
-                                <h3 class="section-eyebrow">Service Management</h3>
-                                <button onclick="runCmd('restart_httpd', false, true)" class="btn btn-neutral w-full justify-start border-l-4 border-l-blue-500">Restart Apache</button>
-                                <button onclick="runCmd('restart_php', false, true)" class="btn btn-neutral w-full justify-start border-l-4 border-l-purple-500">Restart PHP-FPM</button>
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Maintenance</h2>
+                                    <span class="section-eyebrow">Routine</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="runCmd('status')" class="btn btn-neutral w-full">Status</button>
+                                    <button onclick="runCmd('cache_clear')" class="btn btn-neutral w-full">Clear Cache</button>
+                                    <button onclick="runCmd('trash_clean')" class="btn btn-neutral w-full">Empty Trash</button>
+                                    <button onclick="runCmd('db_missing')" class="btn btn-neutral w-full">DB Indices</button>
+                                    <button onclick="runCmd('maint_on')" class="btn btn-outline-red w-full">Maint. ON</button>
+                                    <button onclick="runCmd('maint_off')" class="btn btn-outline-green w-full">Maint. OFF</button>
+                                </div>
                             </div>
-                            <div class="space-y-4">
-                                <h3 class="section-eyebrow">OS Operations</h3>
-                                <button onclick="confirmAction('Run DNF Update?','sys_update', false, true)" class="btn btn-neutral w-full justify-between"><span>Run DNF Update</span><span class="badge bg-black/10 dark:bg-black/30">SLOW</span></button>
-                                <button onclick="confirmAction('REBOOT SERVER?','reboot', true, true)" class="btn btn-danger w-full justify-between"><span>REBOOT SERVER</span><span class="badge bg-white/20">DANGER</span></button>
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Heavy Operations</h2>
+                                    <span class="section-eyebrow">Async</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <button onclick="runCmd('files_scan')" class="btn btn-primary w-full">Scan All Files</button>
+                                    <button onclick="runCmd('preview_gen')" class="btn btn-primary w-full">Gen Previews</button>
+                                    <button onclick="confirmAction('Truncate Log?', 'log_truncate')" class="btn btn-outline-red w-full">Truncate Log</button>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-system" class="tab-content hidden space-y-6">
+                        <div class="card card-accent p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Stealth Mode</h2>
+                                </div>
+                                <div id="modsec-badge" class="badge bg-gray-100 dark:bg-surface2 text-gray-500 dark:text-gray-400">STATUS UNKNOWN</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="toggleModSec('modsec_on', true)" class="btn btn-violet py-3">ENABLE LOCK</button>
+                                <button onclick="toggleModSec('modsec_off', true)" class="btn btn-neutral py-3">DISABLE LOCK</button>
+                            </div>
+                        </div>
+                        <div class="card p-6" style="border-top:2px solid #e11d48">
+                            <h2 class="text-base font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">Root Controls <span class="badge bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300">Auth Required</span></h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-3">
+                                    <h3 class="section-eyebrow mb-1">Service Management</h3>
+                                    <button onclick="runCmd('restart_httpd', false, true)" class="btn btn-neutral w-full justify-start">Restart Apache</button>
+                                    <button onclick="runCmd('restart_php', false, true)" class="btn btn-neutral w-full justify-start">Restart PHP-FPM</button>
+                                </div>
+                                <div class="space-y-3">
+                                    <h3 class="section-eyebrow mb-1">OS Operations</h3>
+                                    <button onclick="confirmAction('Run DNF Update?','sys_update', false, true)" class="btn btn-neutral w-full justify-between"><span>Run DNF Update</span><span class="badge bg-gray-100 dark:bg-surface2">SLOW</span></button>
+                                    <button onclick="confirmAction('REBOOT SERVER?','reboot', true, true)" class="btn btn-danger w-full justify-between"><span>REBOOT SERVER</span><span class="badge bg-white/20">DANGER</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-health" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <div class="flex justify-between mb-6"><h2 class="text-base font-bold text-gray-900 dark:text-white">Live Resources</h2><button onclick="fetchStats()" class="btn btn-neutral py-1.5 px-3 text-xs">Refresh</button></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="bg-gray-50 dark:bg-surface2 p-4 rounded-lg border border-gray-200 dark:border-line"><div class="flex justify-between mb-2 text-sm"><span class="text-gray-500 dark:text-gray-400 font-mono">RAM</span><span id="ram-text" class="text-gray-900 dark:text-white font-mono">...</span></div><div class="w-full bg-gray-200 dark:bg-line h-1.5 rounded-full"><div id="ram-bar" class="bg-violet-500 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div></div></div>
+                                <div class="bg-gray-50 dark:bg-surface2 p-4 rounded-lg border border-gray-200 dark:border-line"><div class="flex justify-between mb-2 text-sm"><span class="text-gray-500 dark:text-gray-400 font-mono">DISK (/)</span><span id="disk-text" class="text-gray-900 dark:text-white font-mono">...</span></div><div class="w-full bg-gray-200 dark:bg-line h-1.5 rounded-full"><div id="disk-bar" class="bg-accent-500 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div></div></div>
+                            </div>
+                            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-line text-sm font-mono"><span class="text-gray-500">uptime:</span> <span id="uptime-text" class="ml-2 text-gray-900 dark:text-white">checking...</span></div>
                         </div>
                     </div>
                 </div>
 
-                <div id="tab-health" class="tab-content hidden space-y-6">
-                    <div class="card p-6">
-                        <div class="flex justify-between mb-6"><h2 class="text-xl font-bold text-green-600 dark:text-green-400">Live Resources</h2><button onclick="fetchStats()" class="btn btn-neutral py-1.5 px-3 text-xs">Refresh</button></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700"><div class="flex justify-between mb-2 text-sm"><span class="text-gray-500 dark:text-gray-400">RAM</span><span id="ram-text" class="text-gray-900 dark:text-white font-mono">...</span></div><div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full"><div id="ram-bar" class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="width:0%"></div></div></div>
-                            <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700"><div class="flex justify-between mb-2 text-sm"><span class="text-gray-500 dark:text-gray-400">Disk (/)</span><span id="disk-text" class="text-gray-900 dark:text-white font-mono">...</span></div><div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full"><div id="disk-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width:0%"></div></div></div>
+                <div class="xl:col-span-4">
+                    <div class="bg-term rounded-xl border border-line flex flex-col h-full sticky top-6 overflow-hidden">
+                        <div class="bg-surface px-4 py-3 flex justify-between items-center border-b border-line shrink-0">
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-500/70"></span><span class="w-2 h-2 rounded-full bg-amber-500/70"></span><span class="w-2 h-2 rounded-full bg-accent-500/70"></span><span class="text-xs font-mono text-gray-500 ml-2">admin@nc:~# output</span></div>
+                            <button onclick="clearLog()" class="text-xs font-mono text-gray-500 hover:text-white font-bold tracking-wider ml-auto">CLEAR</button>
                         </div>
-                        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-sm"><span class="text-gray-500">System Uptime:</span> <span id="uptime-text" class="ml-2 text-gray-900 dark:text-white font-mono">Checking...</span></div>
+                        <div id="terminal" class="terminal-box flex-1 p-4 font-mono text-xs sm:text-sm text-accent-400 whitespace-pre-wrap break-all bg-term"><span class="text-gray-600">// Ready...</span></div>
                     </div>
-                </div>
-            </div>
-
-            <div class="xl:col-span-4">
-                <div class="bg-term rounded-xl shadow-2xl border border-gray-300 dark:border-gray-700 flex flex-col h-full sticky top-6 overflow-hidden">
-                    <div class="bg-gray-100 dark:bg-gray-800 px-4 py-3 flex justify-between items-center border-b border-gray-300 dark:border-gray-700 shrink-0">
-                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span><span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span><span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span><span class="text-xs font-mono text-gray-500 ml-3">admin@nc:~# output</span></div>
-                        <button onclick="clearLog()" class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white font-bold tracking-wider ml-auto">CLEAR</button>
-                    </div>
-                    <div id="terminal" class="terminal-box flex-1 p-4 font-mono text-xs sm:text-sm text-green-600 dark:text-green-400 whitespace-pre-wrap break-all bg-white dark:bg-[#0c0c0c]"><span class="text-gray-400 dark:text-gray-600">// Ready...</span></div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         const TOKEN = '<?= $SECRET_TOKEN ?>';
@@ -267,11 +268,11 @@ $pageTitle = 'NC Dashboard';
                 text: msg,
                 icon: isDanger ? 'warning' : 'question',
                 showCancelButton: true,
-                confirmButtonColor: isDanger ? '#d33' : '#0082c9',
+                confirmButtonColor: isDanger ? '#e11d48' : '#0d9488',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Yes, proceed',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
             });
 
             if (result.isConfirmed) {
@@ -300,10 +301,10 @@ $pageTitle = 'NC Dashboard';
                 const data = await res.json();
                 const badge = document.getElementById('modsec-badge');
                 if (data.output && data.output.trim() === 'LOCKED') {
-                    badge.className = "badge bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 border border-green-500 status-dot-pulse";
+                    badge.className = "badge bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 status-dot-pulse";
                     badge.innerHTML = "🔒 WAF ACTIVE";
                 } else {
-                    badge.className = "badge bg-red-100 dark:bg-red-900/20 text-red-500 border border-red-300 dark:border-red-900/50";
+                    badge.className = "badge bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400";
                     badge.innerHTML = "🔓 WAF INACTIVE";
                 }
             } catch (e) {}
@@ -315,11 +316,11 @@ $pageTitle = 'NC Dashboard';
                 text: 'Are you sure you want to update ModSecurity rules?',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#0082c9',
+                confirmButtonColor: '#0d9488',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Yes, update',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
             });
             if (!result.isConfirmed) return;
 
@@ -345,12 +346,12 @@ $pageTitle = 'NC Dashboard';
             const unlockBtn = document.getElementById('force-unlock-btn');
             const buttons = document.querySelectorAll('button:not(#force-unlock-btn):not(#sun-icon):not(#moon-icon)');
             if (busy) {
-                indicator.innerHTML = '<span class="text-red-500 dark:text-red-400 font-bold animate-pulse">PROCESSING...</span>';
+                indicator.innerHTML = '<span class="text-rose-500 dark:text-rose-400 font-bold animate-pulse">BUSY</span>';
                 unlockBtn.classList.remove('hidden');
                 buttons.forEach(btn => btn.disabled = true);
                 if (logFile && !pollInterval) startPolling(logFile);
             } else {
-                indicator.innerHTML = '<div class="h-2 w-2 rounded-full bg-green-500 status-dot-pulse mr-2"></div><span class="text-gray-600 dark:text-gray-400">Idle</span>';
+                indicator.innerHTML = '<div class="h-1.5 w-1.5 rounded-full bg-green-500 status-dot-pulse"></div><span class="text-gray-500 dark:text-gray-400">Idle</span>';
                 unlockBtn.classList.add('hidden');
                 buttons.forEach(btn => btn.disabled = false);
                 if (pollInterval) stopPolling();
@@ -363,11 +364,11 @@ $pageTitle = 'NC Dashboard';
                 text: 'Only do this if a process is genuinely stuck.',
                 icon: 'error',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
+                confirmButtonColor: '#e11d48',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Unlock',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
             });
             if (!result.isConfirmed) return;
 
@@ -387,8 +388,8 @@ $pageTitle = 'NC Dashboard';
         function log(text, type = 'info') {
             const line = document.createElement('div');
             line.className = 'mb-1';
-            if (type === 'error') { line.className += ' text-red-500 dark:text-red-400'; text = `[ERR] ${text}`; }
-            else if (type === 'system') { line.className += ' text-blue-600 dark:text-blue-400 font-bold mt-2'; text = `>>> ${text}`; }
+            if (type === 'error') { line.className += ' text-rose-400'; text = `[ERR] ${text}`; }
+            else if (type === 'system') { line.className += ' text-violet-400 font-bold mt-2'; text = `>>> ${text}`; }
             line.textContent = text;
             terminal.appendChild(line);
             terminal.scrollTop = terminal.scrollHeight;
@@ -408,8 +409,8 @@ $pageTitle = 'NC Dashboard';
                     inputLabel: 'e.g. user_saml',
                     inputPlaceholder: 'App ID',
                     showCancelButton: true,
-                    background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                    background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                    color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
                 });
                 if (!appId) return;
                 arg = appId;
@@ -423,9 +424,9 @@ $pageTitle = 'NC Dashboard';
                     inputLabel: 'Enter Security Password',
                     inputPlaceholder: 'Password',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                    confirmButtonColor: '#e11d48',
+                    background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                    color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
                 });
                 if (!password) {
                     log('Cancelled: Security Password required.', 'error');
@@ -449,14 +450,14 @@ $pageTitle = 'NC Dashboard';
                 const data = await response.json();
                 if (data.error) {
                     log(data.error, 'error');
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.error, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.error, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
                     setBusyState(false);
                     return;
                 }
                 if (data.status === 'done') {
                     log(data.output);
                     log('Done.', 'system');
-                    Swal.fire({ icon: 'success', title: 'Done', text: 'Operation completed successfully.', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
+                    Swal.fire({ icon: 'success', title: 'Done', text: 'Operation completed successfully.', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
                     setBusyState(false);
                 }
                 else if (data.status === 'started') { log(`Job started. Log: ${data.log_file}`, 'system'); startPolling(data.log_file); }
