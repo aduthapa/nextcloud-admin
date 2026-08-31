@@ -113,9 +113,7 @@ $pageTitle = 'Security Center';
 </style>
 </head>
 <body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div></div>
-    </div>
+    <?php require __DIR__ . '/partials/loader.php'; ?>
 
     <div id="install-lock" class="hidden fixed inset-0 z-[200] bg-white/85 dark:bg-black/85 flex flex-col items-center justify-center text-center transition-colors">
         <div class="w-20 h-20 border-4 border-rose-900/50 border-t-rose-500 rounded-full animate-spin mb-6"></div>
@@ -218,12 +216,6 @@ $pageTitle = 'Security Center';
 
         // --- Init ---
         window.addEventListener('load', () => {
-            // Hide Loader
-            const l = document.getElementById('global-loader');
-            l.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => l.style.display = 'none', 500);
-
-            // Check Tools
             checkTools();
         });
 

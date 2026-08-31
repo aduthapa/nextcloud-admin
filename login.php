@@ -33,6 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 colors: { accent: { DEFAULT:'#2dd4bf', 50:'#f0fdfa', 100:'#ccfbf1', 200:'#99f6e4', 300:'#5eead4', 400:'#2dd4bf', 500:'#14b8a6', 600:'#0d9488', 700:'#0f766e', 800:'#115e59', 900:'#134e4a', 950:'#042f2e' }, ink:'#080b10', surface:'#11161f', line:'#232a38' }
             } }
         };
+        if (localStorage.loaderLogo === 'off') {
+            document.documentElement.classList.add('no-loader-logo');
+        }
     </script>
     <style>
         html, body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
@@ -42,18 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body class="bg-ink text-gray-200 flex items-center justify-center h-screen font-sans selection:bg-accent-500 selection:text-ink grid-fade">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center">
-            <div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div>
-            <div class="mt-4 text-accent-400 font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div>
-        </div>
-    </div>
+    <?php require __DIR__ . '/partials/loader.php'; ?>
     <script>
-        window.addEventListener('load', () => {
-            const loader = document.getElementById('global-loader');
-            loader.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => loader.style.display = 'none', 500);
-        });
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', (e) => {

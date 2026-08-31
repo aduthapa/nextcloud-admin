@@ -117,11 +117,8 @@ $pageTitle = 'Database Manager';
 <?php require __DIR__ . '/partials/head.php'; ?>
 </head>
 <body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div></div>
-    </div>
+    <?php require __DIR__ . '/partials/loader.php'; ?>
     <script>
-        window.onload=()=>{const l=document.getElementById('global-loader');l.classList.add('opacity-0','pointer-events-none');setTimeout(()=>l.style.display='none',500);}
         <?php if ($message): ?>
         document.addEventListener('DOMContentLoaded', () => {
             Swal.fire({
@@ -166,7 +163,10 @@ $pageTitle = 'Database Manager';
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="card p-5">
-                    <h3 class="section-eyebrow mb-3">Create Database</h3>
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <div class="icon-badge bg-accent-500/10 text-accent-600 dark:text-accent-400"><svg class="w-4.5 h-4.5" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M12 10v6m-3-3h6"></path></svg></div>
+                        <h3 class="section-eyebrow">Create Database</h3>
+                    </div>
                     <form method="POST" class="flex gap-2">
                         <input type="hidden" name="action" value="create_db">
                         <input type="text" name="db_name" placeholder="new_db_name" class="flex-1 bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line rounded-lg px-3 py-2 text-sm font-mono text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 focus:outline-none" required pattern="[a-zA-Z0-9_]+">
@@ -191,7 +191,10 @@ $pageTitle = 'Database Manager';
                 </div>
 
                 <div class="card p-5">
-                    <h3 class="section-eyebrow mb-3">Create User</h3>
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <div class="icon-badge bg-violet-500/10 text-violet-500"><svg class="w-4.5 h-4.5" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM20 8v6m3-3h-6"/></svg></div>
+                        <h3 class="section-eyebrow">Create User</h3>
+                    </div>
                     <form method="POST" class="flex flex-col gap-2">
                         <input type="hidden" name="action" value="create_user">
                         <div class="flex gap-2">
