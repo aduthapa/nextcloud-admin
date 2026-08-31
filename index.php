@@ -1,6 +1,23 @@
 <?php
 require 'db.php'; require_login();
-if (isset($_GET['logout'])) { audit_log('logout'); session_destroy(); header("Location: /login"); exit; }
+if (isset($_GET['logout'])) {
+    audit_log('logout');
+    if (!empty($_SESSION['saml_auth'])) {
+        require __DIR__ . '/saml_config.php';
+        require __DIR__ . '/lib/saml.php';
+        $nameId = $_SESSION['saml_name_id'] ?? '';
+        $sessionIndex = $_SESSION['saml_session_index'] ?? null;
+        session_destroy();
+        if ($nameId !== '') {
+            $requestId = saml_new_id();
+            saml_store_request($pdo, $requestId, 'logout');
+            header("Location: " . saml_build_logout_request($SAML_SP_ENTITY_ID, $SAML_IDP_SLO_URL, $requestId, $nameId, $sessionIndex));
+            exit;
+        }
+    }
+    session_destroy();
+    header("Location: /login?loggedout=1"); exit;
+}
 
 $SECRET_TOKEN = '#pdqIJ*A!ykde!0l1socWu$61bTsB*3V';
 

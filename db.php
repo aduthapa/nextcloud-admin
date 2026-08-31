@@ -58,6 +58,58 @@ try {
     // Non-fatal, same reasoning as above.
 }
 
+// Per-admin second factor: at most one method active at a time (TOTP or Duo).
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS admin_2fa (
+        username VARCHAR(191) PRIMARY KEY,
+        totp_secret VARCHAR(64) NULL,
+        totp_enabled TINYINT(1) NOT NULL DEFAULT 0,
+        duo_enabled TINYINT(1) NOT NULL DEFAULT 0,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
+// Maps a SAML NameID (from Auth0) to an existing local admin account. SSO
+// never auto-creates admins - the account must already exist in `admins`.
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS admin_saml_identities (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(191) NOT NULL,
+        name_id VARCHAR(191) NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY (name_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
+// Outstanding SAML AuthnRequest/LogoutRequest IDs we issued - used to check
+// InResponseTo on the way back so a Response can't be replayed or forged
+// without correlating to a request this SP actually made.
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS saml_request_state (
+        request_id VARCHAR(64) PRIMARY KEY,
+        type VARCHAR(20) NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
+// Consumed assertion IDs - a validly-signed assertion can still be replayed
+// unless we remember we've already used it once.
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS saml_used_assertions (
+        assertion_id VARCHAR(191) PRIMARY KEY,
+        expires_at DATETIME NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
 // Function to force login
 function require_login() {
     if (!isset($_SESSION['admin_user'])) {
