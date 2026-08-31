@@ -81,106 +81,108 @@ $pageTitle = 'NC Settings';
 <head>
 <?php require __DIR__ . '/partials/head.php'; ?>
 </head>
-<body class="font-sans min-h-screen p-4 lg:p-8 bg-gray-100 text-gray-900 dark:bg-[#111827] dark:text-gray-200">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-16 h-16 border-4 border-blue-900/30 border-t-[#0082c9] rounded-full animate-spin"></div><div class="mt-4 text-[#0082c9] font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div></div>
+<body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
+    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
+        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div></div>
     </div>
     <script>
         window.addEventListener('load', () => { const l = document.getElementById('global-loader'); l.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => l.style.display = 'none', 500); });
     </script>
 
-    <div class="max-w-[1600px] mx-auto">
-        <div class="flex flex-wrap gap-4 justify-between items-center mb-8 pb-4 border-b border-gray-300 dark:border-gray-700">
-            <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold tracking-tight text-gray-800 dark:text-white">System<span class="text-nc font-light">Settings</span></h1>
+    <?php $activePage = 'settings'; $showStatusBar = true; require __DIR__ . '/partials/nav.php'; ?>
+
+    <main class="flex-1 min-w-0 p-6 lg:p-10">
+        <div class="max-w-[1500px] mx-auto">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Settings</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-500 font-mono mt-1">backups, smtp, profile, logs &amp; cron</p>
             </div>
-            <?php $activePage = 'settings'; $showStatusBar = true; require __DIR__ . '/partials/nav.php'; ?>
+
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                <div class="xl:col-span-8 flex flex-col">
+                    <div class="flex gap-1 mb-6 border-b border-gray-200 dark:border-line overflow-x-auto">
+                        <?php $tabs=['backup'=>'BACKUPS','users'=>'USERS','smtp'=>'SMTP','profile'=>'PROFILE','logs'=>'LOGS','cron'=>'CRON'];
+                        foreach($tabs as $id=>$label) echo "<button onclick=\"switchTab('tab-$id')\" class=\"tab-btn px-4 py-2.5 transition whitespace-nowrap ".($id=='backup'?'active':'')."\">$label</button>"; ?>
+                    </div>
+
+                    <div id="tab-backup" class="tab-content space-y-6 fade-in">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-4 text-gray-900 dark:text-white">Database Backups</h2>
+                            <button onclick="runCmd('db_backup')" class="btn btn-primary w-full mb-4">Backup Database Now (mysqldump)</button>
+                            <div class="bg-gray-50 dark:bg-surface2 p-3 rounded-lg text-xs font-mono text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-line">location: <?= htmlspecialchars($BACKUP_DIR) ?></div>
+                        </div>
+                    </div>
+
+                    <div id="tab-users" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-4 text-gray-900 dark:text-white">User Management</h2>
+                            <button onclick="runCmd('user_list')" class="btn btn-neutral w-full mb-4">List All Users</button>
+                            <p class="text-sm text-gray-500 italic">Note: Password resets should be handled via the Nextcloud interface for security.</p>
+                        </div>
+                    </div>
+
+                    <div id="tab-smtp" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-4 text-gray-900 dark:text-white">SMTP Settings</h2>
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <input id="smtp_host" placeholder="Host" value="<?= htmlspecialchars($smtp['host']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full">
+                                <input id="smtp_port" placeholder="Port" value="<?= htmlspecialchars($smtp['port']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full">
+                                <input id="smtp_user" placeholder="Username" value="<?= htmlspecialchars($smtp['username']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full">
+                                <input id="smtp_pass" type="password" placeholder="Password" value="<?= htmlspecialchars($smtp['password']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full">
+                                <input id="smtp_enc" placeholder="Encryption" value="<?= htmlspecialchars($smtp['encryption']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full">
+                                <input id="smtp_name" placeholder="From Name" value="<?= htmlspecialchars($smtp['from_name']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full col-span-2">
+                                <input id="smtp_email" placeholder="From Email" value="<?= htmlspecialchars($smtp['from_email']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full col-span-2">
+                            </div>
+                            <button onclick="saveSmtp()" class="btn btn-outline-green w-full">Save SMTP Settings</button>
+                        </div>
+                    </div>
+
+                    <div id="tab-profile" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-4 text-gray-900 dark:text-white">Admin Profile</h2>
+                            <div class="space-y-4">
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">username</label><input id="prof_user" value="<?= htmlspecialchars($profile['username']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">email</label><input id="prof_email" value="<?= htmlspecialchars($profile['email']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">new password (optional)</label><input id="prof_pass" type="password" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full"></div>
+                                <button onclick="saveProfile()" class="btn btn-primary w-full">Update Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-logs" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-4 text-gray-900 dark:text-white">Server Logs <span class="section-eyebrow">last 100 lines</span></h2>
+                            <div class="flex gap-3">
+                                <button onclick="viewLog('nc')" class="btn btn-neutral w-full">Nextcloud</button>
+                                <button onclick="viewLog('apache')" class="btn btn-neutral w-full">Apache</button>
+                                <button onclick="viewLog('php')" class="btn btn-neutral w-full">PHP-FPM</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-cron" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-4 text-gray-900 dark:text-white">Cron Scheduler</h2>
+                            <div class="space-y-3">
+                                <button onclick="runCmd('cron_status')" class="btn btn-neutral w-full">Check Cron Status</button>
+                                <button onclick="runCmd('cron_run')" class="btn btn-primary w-full">Force Run Cron</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-4">
+                    <div class="bg-term rounded-xl border border-line flex flex-col h-full sticky top-6 overflow-hidden">
+                        <div class="bg-surface px-4 py-3 flex justify-between items-center border-b border-line shrink-0">
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-500/70"></span><span class="w-2 h-2 rounded-full bg-amber-500/70"></span><span class="w-2 h-2 rounded-full bg-accent-500/70"></span><span class="text-xs font-mono text-gray-500 ml-2">admin@nc:~# output</span></div>
+                            <button onclick="clearLog()" class="text-xs font-mono text-gray-500 hover:text-white font-bold tracking-wider ml-auto">CLEAR</button>
+                        </div>
+                        <div id="terminal" class="terminal-box flex-1 p-4 font-mono text-xs sm:text-sm text-accent-400 whitespace-pre-wrap break-all bg-term"><span class="text-gray-600">// Ready...</span></div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div class="xl:col-span-8 flex flex-col">
-                <div class="flex space-x-1 mb-6 border-b border-gray-300 dark:border-gray-700 overflow-x-auto">
-                    <?php $tabs=['backup'=>'🛡️ Backups','users'=>'👥 Users','smtp'=>'📧 SMTP','profile'=>'👤 Profile','logs'=>'📜 Logs','cron'=>'⏰ Cron'];
-                    foreach($tabs as $id=>$label) echo "<button onclick=\"switchTab('tab-$id')\" class=\"tab-btn px-4 py-2 font-medium hover:text-gray-900 dark:hover:text-white transition whitespace-nowrap ".($id=='backup'?'active':'')."\">$label</button>"; ?>
-                </div>
-
-                <div id="tab-backup" class="tab-content space-y-6 fade-in">
-                    <div class="card p-6">
-                        <h2 class="text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">Database Backups</h2>
-                        <button onclick="runCmd('db_backup')" class="btn btn-primary w-full mb-4">Backup Database Now (mysqldump)</button>
-                        <div class="bg-gray-100 dark:bg-black/30 p-4 rounded-lg text-sm font-mono text-gray-600 dark:text-gray-400">Location: <?= htmlspecialchars($BACKUP_DIR) ?></div>
-                    </div>
-                </div>
-
-                <div id="tab-users" class="tab-content hidden space-y-6">
-                    <div class="card p-6">
-                        <h2 class="text-xl font-bold mb-4 text-purple-600 dark:text-purple-400">User Management</h2>
-                        <button onclick="runCmd('user_list')" class="btn btn-neutral w-full mb-4">List All Users</button>
-                        <p class="text-sm text-gray-500 italic">Note: Password resets should be handled via the Nextcloud interface for security.</p>
-                    </div>
-                </div>
-
-                <div id="tab-smtp" class="tab-content hidden space-y-6">
-                    <div class="card p-6">
-                        <h2 class="text-xl font-bold mb-4 text-green-600 dark:text-green-400">SMTP Settings</h2>
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <input id="smtp_host" placeholder="Host" value="<?= htmlspecialchars($smtp['host']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full">
-                            <input id="smtp_port" placeholder="Port" value="<?= htmlspecialchars($smtp['port']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full">
-                            <input id="smtp_user" placeholder="Username" value="<?= htmlspecialchars($smtp['username']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full">
-                            <input id="smtp_pass" type="password" placeholder="Password" value="<?= htmlspecialchars($smtp['password']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full">
-                            <input id="smtp_enc" placeholder="Encryption" value="<?= htmlspecialchars($smtp['encryption']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full">
-                            <input id="smtp_name" placeholder="From Name" value="<?= htmlspecialchars($smtp['from_name']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full col-span-2">
-                            <input id="smtp_email" placeholder="From Email" value="<?= htmlspecialchars($smtp['from_email']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full col-span-2">
-                        </div>
-                        <button onclick="saveSmtp()" class="btn btn-soft-green w-full">Save SMTP Settings</button>
-                    </div>
-                </div>
-
-                <div id="tab-profile" class="tab-content hidden space-y-6">
-                    <div class="card p-6">
-                        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Admin Profile</h2>
-                        <div class="space-y-4">
-                            <div><label class="text-sm text-gray-500 dark:text-gray-400 mb-1 block">Username</label><input id="prof_user" value="<?= htmlspecialchars($profile['username']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full"></div>
-                            <div><label class="text-sm text-gray-500 dark:text-gray-400 mb-1 block">Email</label><input id="prof_email" value="<?= htmlspecialchars($profile['email']) ?>" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full"></div>
-                            <div><label class="text-sm text-gray-500 dark:text-gray-400 mb-1 block">New Password (Optional)</label><input id="prof_pass" type="password" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nc/40 focus:border-nc w-full"></div>
-                            <button onclick="saveProfile()" class="btn btn-primary w-full">Update Profile</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-logs" class="tab-content hidden space-y-6">
-                    <div class="card p-6">
-                        <h2 class="text-xl font-bold mb-4 text-yellow-600 dark:text-yellow-400">Server Logs (Last 100 Lines)</h2>
-                        <div class="flex gap-3">
-                            <button onclick="viewLog('nc')" class="btn btn-neutral w-full">Nextcloud</button>
-                            <button onclick="viewLog('apache')" class="btn btn-neutral w-full">Apache</button>
-                            <button onclick="viewLog('php')" class="btn btn-neutral w-full">PHP-FPM</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-cron" class="tab-content hidden space-y-6">
-                    <div class="card p-6">
-                        <h2 class="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Cron Scheduler</h2>
-                        <div class="space-y-3">
-                            <button onclick="runCmd('cron_status')" class="btn btn-neutral w-full">Check Cron Status</button>
-                            <button onclick="runCmd('cron_run')" class="btn btn-primary w-full">Force Run Cron</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="xl:col-span-4">
-                <div class="bg-term rounded-xl shadow-2xl border border-gray-300 dark:border-gray-700 flex flex-col h-full sticky top-6 overflow-hidden">
-                    <div class="bg-gray-100 dark:bg-gray-800 px-4 py-3 flex justify-between items-center border-b border-gray-300 dark:border-gray-700 shrink-0">
-                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span><span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span><span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span><span class="text-xs font-mono text-gray-500 ml-3">admin@nc:~# output</span></div>
-                        <button onclick="clearLog()" class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white font-bold tracking-wider ml-auto">CLEAR</button>
-                    </div>
-                    <div id="terminal" class="terminal-box flex-1 p-4 font-mono text-xs sm:text-sm text-green-600 dark:text-green-400 whitespace-pre-wrap break-all bg-white dark:bg-[#0c0c0c]"><span class="text-gray-400 dark:text-gray-600">// Ready...</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <script>
         const TOKEN='<?= $SECRET_TOKEN ?>'; let pollInterval=null, isBusy=false; const terminal=document.getElementById('terminal');
@@ -205,15 +207,15 @@ $pageTitle = 'NC Settings';
 
         function showResult(res) {
              if(res.error) {
-                Swal.fire({ icon: 'error', title: 'Error', text: res.error, background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
+                Swal.fire({ icon: 'error', title: 'Error', text: res.error, background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
                 log(res.error, 'error');
              } else {
-                Swal.fire({ icon: 'success', title: 'Success', text: res.output, timer: 3000, showConfirmButton: false, toast: true, position: 'top-end', background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
+                Swal.fire({ icon: 'success', title: 'Success', text: res.output, timer: 3000, showConfirmButton: false, toast: true, position: 'top-end', background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
                 log(res.output, 'system');
              }
         }
 
-        function setBusyState(busy,logFile=null){ isBusy=busy; const btns=document.querySelectorAll('button:not(#sun-icon):not(#moon-icon)'); const ind=document.getElementById('status-indicator'); const unl=document.getElementById('force-unlock-btn'); if(busy){ ind.innerHTML='<span class="text-red-400 font-bold animate-pulse">PROCESSING...</span>'; unl.classList.remove('hidden'); btns.forEach(b=>b.disabled=true); if(logFile&&!pollInterval)startPolling(logFile); }else{ ind.innerHTML='<div class="h-2 w-2 rounded-full bg-green-500 status-dot-pulse mr-2"></div><span class="text-gray-600 dark:text-gray-400">Idle</span>'; unl.classList.add('hidden'); btns.forEach(b=>b.disabled=false); if(pollInterval)stopPolling(); } }
+        function setBusyState(busy,logFile=null){ isBusy=busy; const btns=document.querySelectorAll('button:not(#sun-icon):not(#moon-icon)'); const ind=document.getElementById('status-indicator'); const unl=document.getElementById('force-unlock-btn'); if(busy){ ind.innerHTML='<span class="text-rose-400 font-bold animate-pulse">BUSY</span>'; unl.classList.remove('hidden'); btns.forEach(b=>b.disabled=true); if(logFile&&!pollInterval)startPolling(logFile); }else{ ind.innerHTML='<div class="h-1.5 w-1.5 rounded-full bg-green-500 status-dot-pulse"></div><span class="text-gray-500 dark:text-gray-400">Idle</span>'; unl.classList.add('hidden'); btns.forEach(b=>b.disabled=false); if(pollInterval)stopPolling(); } }
 
         async function forceUnlock(){
             const result = await Swal.fire({
@@ -221,19 +223,19 @@ $pageTitle = 'NC Settings';
                 text: "Only do this if a command is stuck.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
+                confirmButtonColor: '#e11d48',
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Unlock',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff',
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff',
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
             });
             if (result.isConfirmed) {
                 await callApi('force_unlock'); setBusyState(false);
-                Swal.fire({ icon: 'success', title: 'Unlocked', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
+                Swal.fire({ icon: 'success', title: 'Unlocked', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
             }
         }
         async function checkSystemState(){ try{const r=await fetch('settings.php',{method:'POST',body:JSON.stringify({token:TOKEN,action:'get_state'})});const d=await r.json();if(d.status==='busy'&&!isBusy)setBusyState(true,d.log_file);else if(d.status==='idle'&&isBusy)setBusyState(false);}catch(e){} }
-        function log(t,type='info'){ const l=document.createElement('div'); l.className='mb-1'; if(type=='error')l.className+=' text-red-500 dark:text-red-400'; else if(type=='system')l.className+=' text-blue-600 dark:text-blue-400 font-bold mt-2'; l.textContent=t; terminal.appendChild(l); terminal.scrollTop=terminal.scrollHeight; }
+        function log(t,type='info'){ const l=document.createElement('div'); l.className='mb-1'; if(type=='error')l.className+=' text-rose-400'; else if(type=='system')l.className+=' text-violet-400 font-bold mt-2'; l.textContent=t; terminal.appendChild(l); terminal.scrollTop=terminal.scrollHeight; }
         function clearLog(){ terminal.innerHTML=''; }
         async function runCmd(action){ if(isBusy)return; log(`> ${action}...`,'system'); setBusyState(true); const d=await callApi(action); if(d.error){log(d.error,'error');setBusyState(false);return;} if(d.status=='done'){log(d.output);log('Done.','system');setBusyState(false);}else if(d.status=='started'){log(`Started. Log: ${d.log_file}`,'system');startPolling(d.log_file);} }
         function startPolling(f){ if(pollInterval)clearInterval(pollInterval); pollInterval=setInterval(async()=>{ try{const r=await fetch('settings.php',{method:'POST',body:JSON.stringify({token:TOKEN,action:'read_log',file:f})});const d=await r.json();if(d.output){terminal.innerHTML='';const p=document.createElement('div');p.textContent=d.output;terminal.appendChild(p);terminal.scrollTop=terminal.scrollHeight;}}catch(e){} },2000); }

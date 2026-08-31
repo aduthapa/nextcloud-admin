@@ -21,18 +21,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8"><title>Login - Nextcloud Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{nc:'#0082c9',nc_dark:'#005f92'}}}}; </script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {
+                fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['"JetBrains Mono"','ui-monospace','monospace'] },
+                colors: { accent: { DEFAULT:'#2dd4bf', 50:'#f0fdfa', 100:'#ccfbf1', 200:'#99f6e4', 300:'#5eead4', 400:'#2dd4bf', 500:'#14b8a6', 600:'#0d9488', 700:'#0f766e', 800:'#115e59', 900:'#134e4a', 950:'#042f2e' }, ink:'#080b10', surface:'#11161f', line:'#232a38' }
+            } }
+        };
+    </script>
     <style>
-        .nc-glow { box-shadow: 0 0 15px rgba(0, 130, 201, 0.4); }
-        .grid-fade { background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 32px 32px; }
+        html, body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+        .nc-glow { box-shadow: 0 0 0 1px rgba(45,212,191,.25), 0 8px 32px -8px rgba(45,212,191,.35); }
+        .grid-fade { background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 34px 34px; }
+        .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 flex items-center justify-center h-screen font-sans selection:bg-nc selection:text-white grid-fade">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center transition-opacity duration-500">
+<body class="bg-ink text-gray-200 flex items-center justify-center h-screen font-sans selection:bg-accent-500 selection:text-ink grid-fade">
+    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
         <div class="relative flex flex-col items-center">
-            <div class="w-16 h-16 border-4 border-blue-900/30 border-t-[#0082c9] rounded-full animate-spin"></div>
-            <div class="mt-4 text-[#0082c9] font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div>
+            <div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div>
+            <div class="mt-4 text-accent-400 font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div>
         </div>
     </div>
     <script>
@@ -58,39 +71,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         });
     </script>
-    <div class="bg-gray-800/90 backdrop-blur p-10 rounded-2xl shadow-2xl w-full max-w-sm border border-gray-700 relative overflow-hidden transform hover:shadow-nc_dark/50 transition duration-300">
-        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-nc to-transparent"></div>
+    <div class="bg-surface/90 backdrop-blur p-10 rounded-2xl w-full max-w-sm border border-line relative overflow-hidden nc-glow">
+        <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-accent-400 to-transparent"></div>
 
         <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-nc/15 border border-nc/30 mb-4">
-                <svg class="w-7 h-7 text-nc" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent-500/10 border border-accent-500/25 mb-4">
+                <svg class="w-7 h-7 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path></svg>
             </div>
-            <h1 class="text-4xl font-extrabold text-white tracking-tight">Nextcloud<span class="text-nc">Admin</span></h1>
-            <p class="text-gray-500 text-xs mt-3 uppercase tracking-widest font-semibold">System Authentication</p>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">NC<span class="text-accent-400"> Admin</span></h1>
+            <p class="text-gray-500 text-xs mt-3 uppercase tracking-widest font-mono font-semibold">system authentication</p>
         </div>
 
         <?php if ($error): ?>
-            <div class="bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-6 text-sm text-center font-medium animate-shake"><?= htmlspecialchars($error) ?></div>
+            <div class="bg-rose-950/40 border border-rose-800/60 text-rose-300 px-4 py-3 rounded-lg mb-6 text-sm text-center font-medium animate-shake"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
         <?php if (isset($_GET['reset'])): ?>
-            <div class="bg-green-900/40 border border-green-700 text-green-300 px-4 py-3 rounded-lg mb-6 text-sm text-center font-medium">Password updated. Please login.</div>
+            <div class="bg-accent-950/40 border border-accent-800/50 text-accent-300 px-4 py-3 rounded-lg mb-6 text-sm text-center font-medium">Password updated. Please login.</div>
         <?php endif; ?>
 
-        <form method="POST" class="space-y-6">
+        <form method="POST" class="space-y-5">
             <div>
-                <label class="block text-gray-400 text-xs font-semibold uppercase mb-2 ml-1">Username</label>
-                <input type="text" name="username" class="w-full bg-gray-900/80 text-white border border-gray-600 rounded-xl py-3.5 px-5 focus:border-nc focus:ring-2 focus:ring-nc focus:outline-none transition placeholder-gray-500" placeholder="admin" required autofocus>
+                <label class="block text-gray-500 text-xs font-mono font-semibold uppercase mb-2 ml-1">username</label>
+                <input type="text" name="username" class="w-full bg-ink/60 text-white border border-line rounded-xl py-3.5 px-5 font-mono text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30 focus:outline-none transition placeholder-gray-600" placeholder="admin" required autofocus>
             </div>
             <div>
-                <label class="block text-gray-400 text-xs font-semibold uppercase mb-2 ml-1">Password</label>
-                <input type="password" name="password" class="w-full bg-gray-900/80 text-white border border-gray-600 rounded-xl py-3.5 px-5 focus:border-nc focus:ring-2 focus:ring-nc focus:outline-none transition placeholder-gray-500" placeholder="••••••••" required>
+                <label class="block text-gray-500 text-xs font-mono font-semibold uppercase mb-2 ml-1">password</label>
+                <input type="password" name="password" class="w-full bg-ink/60 text-white border border-line rounded-xl py-3.5 px-5 font-mono text-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30 focus:outline-none transition placeholder-gray-600" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="w-full bg-nc hover:bg-nc_dark text-white font-bold py-3.5 rounded-xl transition duration-200 shadow-xl nc-glow">A U T H E N T I C A T E</button>
+            <button type="submit" class="w-full bg-accent-600 hover:bg-accent-700 text-ink font-bold py-3.5 rounded-xl transition duration-200 tracking-wide">AUTHENTICATE</button>
         </form>
 
         <div class="mt-8 text-center">
-            <a href="/resetpass.php" class="text-xs text-gray-500 hover:text-nc transition font-medium tracking-wide">Forgot Password?</a>
+            <a href="/resetpass.php" class="text-xs text-gray-500 hover:text-accent-400 transition font-medium tracking-wide">Forgot Password?</a>
         </div>
     </div>
 </body>

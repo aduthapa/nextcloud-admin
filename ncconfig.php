@@ -31,9 +31,9 @@ $pageTitle = 'Config Editor';
     #editor { position: absolute; top: 0; right: 0; bottom: 0; left: 0; font-size: 14px; }
 </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden font-sans bg-gray-100 text-gray-900 dark:bg-[#0d1117] dark:text-gray-200">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-16 h-16 border-4 border-blue-900/30 border-t-[#0082c9] rounded-full animate-spin"></div><div class="mt-4 text-[#0082c9] font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div></div>
+<body class="h-screen flex overflow-hidden font-sans bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
+    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
+        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div></div>
     </div>
     <script>
         window.addEventListener('load', () => { const l = document.getElementById('global-loader'); l.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => l.style.display = 'none', 500); });
@@ -43,33 +43,30 @@ $pageTitle = 'Config Editor';
                 icon: '<?= $msgType ?>',
                 title: '<?= $msgType == "success" ? "Saved" : "Error" ?>',
                 html: '<?= str_replace(["\r", "\n"], "", addslashes($message)) ?>',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff',
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff',
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
             });
         });
         <?php endif; ?>
     </script>
 
-    <header class="bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 px-6 py-4 flex flex-wrap gap-4 justify-between items-center shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="bg-nc p-2 rounded-lg"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
-            <span class="font-bold text-xl tracking-tight text-gray-800 dark:text-white">Config<span class="text-gray-500 font-light ml-1">Editor</span></span>
-        </div>
-        <?php $activePage = 'config'; require __DIR__ . '/partials/nav.php'; ?>
-    </header>
+    <?php $activePage = 'config'; require __DIR__ . '/partials/nav.php'; ?>
 
-    <form id="configForm" method="POST" class="flex-1 flex flex-col min-h-0 p-6 pt-0 mt-6">
-        <div class="flex flex-wrap gap-3 justify-between items-center bg-gray-200 dark:bg-gray-900/80 px-4 py-3 rounded-t-xl border border-gray-300 dark:border-gray-700 border-b-0 shrink-0">
-            <span class="font-mono text-xs text-gray-600 dark:text-gray-500 font-semibold tracking-wide">/var/www/html/nextcloud/config/config.php</span>
-            <button type="button" onclick="confirmSave()" class="btn btn-primary px-8">SAVE CHANGES</button>
+    <div class="flex-1 min-w-0 flex flex-col">
+        <div class="h-16 shrink-0 flex flex-wrap gap-3 justify-between items-center bg-white dark:bg-surface border-b border-gray-200 dark:border-line px-6">
+            <div>
+                <span class="font-mono text-xs text-gray-500 dark:text-gray-400 font-semibold tracking-wide">/var/www/html/nextcloud/config/config.php</span>
+            </div>
+            <button type="button" onclick="confirmSave()" class="btn btn-primary px-6">SAVE CHANGES</button>
         </div>
 
-        <textarea name="config_content" id="hidden_content" class="hidden"></textarea>
-
-        <div class="relative flex-1 w-full border border-gray-300 dark:border-gray-700 rounded-b-xl overflow-hidden shadow-2xl">
-            <div id="editor"></div>
-        </div>
-    </form>
+        <form id="configForm" method="POST" class="flex-1 min-h-0 p-4">
+            <textarea name="config_content" id="hidden_content" class="hidden"></textarea>
+            <div class="relative h-full w-full border border-gray-200 dark:border-line rounded-xl overflow-hidden">
+                <div id="editor"></div>
+            </div>
+        </form>
+    </div>
 
     <script>
         // Ace Editor Setup
@@ -112,11 +109,11 @@ $pageTitle = 'Config Editor';
                 text: "A syntax error here can crash Nextcloud. Ensure your PHP is valid.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#0082c9',
-                cancelButtonColor: '#d33',
+                confirmButtonColor: '#0d9488',
+                cancelButtonColor: '#e11d48',
                 confirmButtonText: 'Yes, Save',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
             });
 
             if (result.isConfirmed) {
