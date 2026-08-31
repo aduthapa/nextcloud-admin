@@ -30,6 +30,22 @@ try {
     // Non-fatal: don't let audit-table provisioning block login/usage.
 }
 
+// Password reset tokens (used by resetpass.php). Only the SHA-256 hash of
+// the token is stored - the raw token lives only in the emailed/shown link.
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(191) NOT NULL,
+        token_hash CHAR(64) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX (token_hash),
+        INDEX (username)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
 // Function to force login
 function require_login() {
     if (!isset($_SESSION['admin_user'])) {
