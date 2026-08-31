@@ -145,104 +145,112 @@ $pageTitle = 'Nextcloud';
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                <div class="xl:col-span-8 flex flex-col space-y-6">
-                    <div class="card p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="icon-badge bg-violet-500/10 text-violet-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 4a2 2 0 114 0v1h2.5a1.5 1.5 0 011.5 1.5V9h1a2 2 0 110 4h-1v2.5a1.5 1.5 0 01-1.5 1.5H15v1a2 2 0 11-4 0v-1h-2.5A1.5 1.5 0 017 15.5V13H5.5A1.5 1.5 0 014 11.5v-3A1.5 1.5 0 015.5 7H7V5.5A1.5 1.5 0 018.5 4H11v0z"/></svg></div>
-                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Plugin Manager</h2>
-                            </div>
-                            <span class="section-eyebrow">occ app:*</span>
-                        </div>
-                        <div class="flex gap-3 mb-3">
-                            <button onclick="runCmd('app_enable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-green flex-1">Enable</button>
-                            <button onclick="runCmd('app_disable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-red flex-1">Disable</button>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3">
-                            <button onclick="runCmd('app_list')" class="btn btn-neutral w-full">List Apps</button>
-                            <button onclick="runCmd('update_apps')" class="btn btn-primary w-full col-span-2">Update All Apps</button>
-                        </div>
-                    </div>
-
-                    <div class="card p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="icon-badge bg-fuchsia-500/10 text-fuchsia-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
-                                <h2 class="text-base font-bold text-gray-900 dark:text-white">User Management</h2>
-                            </div>
-                            <span class="section-eyebrow">occ user:*</span>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <button onclick="runCmd('user_enable',true,false,'Enable User','Username')" class="btn btn-outline-green w-full">Enable</button>
-                            <button onclick="runCmd('user_disable',true,false,'Disable User','Username')" class="btn btn-outline-red w-full">Disable</button>
-                            <button onclick="runCmd('user_2fa_disable',true,false,'Disable 2FA For','Username')" class="btn btn-neutral w-full">Disable 2FA</button>
-                            <button onclick="runCmd('user_reset_password',true,false,'Reset Password For','Username')" class="btn btn-primary w-full">Reset Password</button>
-                        </div>
-                        <button onclick="runCmd('user_delete',true,true,'Delete User','Username')" class="btn btn-danger w-full mt-3">Delete User</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="card p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="icon-badge bg-blue-500/10 text-blue-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.077-3.078a6 6 0 01-7.94 7.94l-6.816 6.816a2.121 2.121 0 01-3-3l6.816-6.816a6 6 0 017.94-7.94l-3.07 3.07z"/></svg></div>
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Maintenance</h2>
+                <div class="xl:col-span-8 flex flex-col space-y-8">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-600 mb-3">Apps &amp; Users</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-violet-500/10 text-violet-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 4a2 2 0 114 0v1h2.5a1.5 1.5 0 011.5 1.5V9h1a2 2 0 110 4h-1v2.5a1.5 1.5 0 01-1.5 1.5H15v1a2 2 0 11-4 0v-1h-2.5A1.5 1.5 0 017 15.5V13H5.5A1.5 1.5 0 014 11.5v-3A1.5 1.5 0 015.5 7H7V5.5A1.5 1.5 0 018.5 4H11v0z"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Plugin Manager</h2>
+                                    </div>
+                                    <span class="section-eyebrow">occ app:*</span>
                                 </div>
-                                <span class="section-eyebrow">Routine</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button onclick="runCmd('status')" class="btn btn-neutral w-full">Status</button>
-                                <button onclick="runCmd('cache_clear')" class="btn btn-neutral w-full">Clear Cache</button>
-                                <button onclick="runCmd('trash_clean')" class="btn btn-neutral w-full">Empty Trash</button>
-                                <button onclick="runCmd('db_missing')" class="btn btn-neutral w-full">DB Indices</button>
-                                <button onclick="runCmd('maint_on')" class="btn btn-outline-red w-full">Maint. ON</button>
-                                <button onclick="runCmd('maint_off')" class="btn btn-outline-green w-full">Maint. OFF</button>
-                            </div>
-                        </div>
-                        <div class="card p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="icon-badge bg-amber-500/10 text-amber-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Heavy Operations</h2>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="runCmd('app_enable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-green w-full">Enable</button>
+                                    <button onclick="runCmd('app_disable',true,false,'Enter App ID','e.g. user_saml')" class="btn btn-outline-red w-full">Disable</button>
+                                    <button onclick="runCmd('app_list')" class="btn btn-neutral w-full">List Apps</button>
+                                    <button onclick="runCmd('update_apps')" class="btn btn-primary w-full">Update All</button>
                                 </div>
-                                <span class="section-eyebrow">Async</span>
                             </div>
-                            <div class="space-y-3">
-                                <button onclick="runCmd('files_scan')" class="btn btn-primary w-full">Scan All Files</button>
-                                <button onclick="runCmd('preview_gen')" class="btn btn-primary w-full">Gen Previews</button>
-                                <button onclick="confirmAction('Truncate Log?', 'log_truncate')" class="btn btn-outline-red w-full">Truncate Log</button>
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-fuchsia-500/10 text-fuchsia-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">User Management</h2>
+                                    </div>
+                                    <span class="section-eyebrow">occ user:*</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 mb-3">
+                                    <button onclick="runCmd('user_enable',true,false,'Enable User','Username')" class="btn btn-outline-green w-full">Enable</button>
+                                    <button onclick="runCmd('user_disable',true,false,'Disable User','Username')" class="btn btn-outline-red w-full">Disable</button>
+                                    <button onclick="runCmd('user_2fa_disable',true,false,'Disable 2FA For','Username')" class="btn btn-neutral w-full">Disable 2FA</button>
+                                    <button onclick="runCmd('user_reset_password',true,false,'Reset Password For','Username')" class="btn btn-primary w-full">Reset Password</button>
+                                </div>
+                                <button onclick="runCmd('user_delete',true,true,'Delete User','Username')" class="btn btn-danger w-full">Delete User</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="card p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="icon-badge bg-orange-500/10 text-orange-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5.5a4.5 4.5 0 016.02 4.24l-2.86 2.86a1 1 0 000 1.41l2.83 2.83a4.5 4.5 0 01-6.32-6.32l-4.79-4.79a4.5 4.5 0 00-1.4 8.06l-4.3 4.3a1.5 1.5 0 002.12 2.12l4.3-4.3a4.5 4.5 0 008.06-1.4"/></svg></div>
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Repair</h2>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-600 mb-3">Maintenance</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-blue-500/10 text-blue-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.077-3.078a6 6 0 01-7.94 7.94l-6.816 6.816a2.121 2.121 0 01-3-3l6.816-6.816a6 6 0 017.94-7.94l-3.07 3.07z"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Routine</h2>
+                                    </div>
+                                    <span class="section-eyebrow">occ</span>
                                 </div>
-                                <span class="section-eyebrow">Async</span>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="runCmd('status')" class="btn btn-neutral w-full">Status</button>
+                                    <button onclick="runCmd('cache_clear')" class="btn btn-neutral w-full">Clear Cache</button>
+                                    <button onclick="runCmd('trash_clean')" class="btn btn-neutral w-full">Empty Trash</button>
+                                    <button onclick="runCmd('db_missing')" class="btn btn-neutral w-full">DB Indices</button>
+                                    <button onclick="runCmd('maint_on')" class="btn btn-outline-red w-full">Maint. ON</button>
+                                    <button onclick="runCmd('maint_off')" class="btn btn-outline-green w-full">Maint. OFF</button>
+                                </div>
                             </div>
-                            <div class="space-y-3">
-                                <button onclick="runCmd('maint_repair')" class="btn btn-primary w-full">Maintenance Repair</button>
-                                <button onclick="runCmd('db_add_columns')" class="btn btn-neutral w-full">Add Missing DB Columns</button>
-                                <button onclick="runCmd('db_add_pks')" class="btn btn-neutral w-full">Add Missing Primary Keys</button>
-                                <button onclick="runCmd('files_cleanup')" class="btn btn-neutral w-full">Cleanup File Cache</button>
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-amber-500/10 text-amber-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Heavy Operations</h2>
+                                    </div>
+                                    <span class="section-eyebrow">Async</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <button onclick="runCmd('files_scan')" class="btn btn-primary w-full">Scan All Files</button>
+                                    <button onclick="runCmd('preview_gen')" class="btn btn-primary w-full">Gen Previews</button>
+                                    <button onclick="confirmAction('Truncate Log?', 'log_truncate')" class="btn btn-outline-red w-full">Truncate Log</button>
+                                </div>
                             </div>
                         </div>
-                        <div class="card p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="icon-badge bg-sky-500/10 text-sky-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Diagnostics</h2>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-600 mb-3">Repair &amp; Diagnostics</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-orange-500/10 text-orange-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5.5a4.5 4.5 0 016.02 4.24l-2.86 2.86a1 1 0 000 1.41l2.83 2.83a4.5 4.5 0 01-6.32-6.32l-4.79-4.79a4.5 4.5 0 00-1.4 8.06l-4.3 4.3a1.5 1.5 0 002.12 2.12l4.3-4.3a4.5 4.5 0 008.06-1.4"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Repair</h2>
+                                    </div>
+                                    <span class="section-eyebrow">Async</span>
                                 </div>
-                                <span class="section-eyebrow">occ</span>
+                                <div class="space-y-3">
+                                    <button onclick="runCmd('maint_repair')" class="btn btn-primary w-full">Maintenance Repair</button>
+                                    <button onclick="runCmd('db_add_columns')" class="btn btn-neutral w-full">Add Missing DB Columns</button>
+                                    <button onclick="runCmd('db_add_pks')" class="btn btn-neutral w-full">Add Missing Primary Keys</button>
+                                    <button onclick="runCmd('files_cleanup')" class="btn btn-neutral w-full">Cleanup File Cache</button>
+                                </div>
                             </div>
-                            <div class="space-y-3">
-                                <button onclick="runCmd('integrity_check')" class="btn btn-neutral w-full">Core Integrity Check</button>
-                                <button onclick="runCmd('data_fingerprint')" class="btn btn-neutral w-full">Update Data Fingerprint</button>
-                                <button onclick="runCmd('config_list')" class="btn btn-neutral w-full">View System Config</button>
+                            <div class="card p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-sky-500/10 text-sky-500"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Diagnostics</h2>
+                                    </div>
+                                    <span class="section-eyebrow">occ</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <button onclick="runCmd('integrity_check')" class="btn btn-neutral w-full">Core Integrity Check</button>
+                                    <button onclick="runCmd('data_fingerprint')" class="btn btn-neutral w-full">Update Data Fingerprint</button>
+                                    <button onclick="runCmd('config_list')" class="btn btn-neutral w-full">View System Config</button>
+                                </div>
                             </div>
                         </div>
                     </div>
