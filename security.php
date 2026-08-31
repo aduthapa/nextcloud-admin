@@ -112,89 +112,91 @@ $pageTitle = 'Security Center';
     #install-lock { backdrop-filter: blur(5px); }
 </style>
 </head>
-<body class="font-sans min-h-screen p-4 lg:p-8 bg-gray-100 text-gray-900 dark:bg-[#111827] dark:text-gray-200">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-16 h-16 border-4 border-blue-900/30 border-t-[#0082c9] rounded-full animate-spin"></div><div class="mt-4 text-[#0082c9] font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div></div>
+<body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
+    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
+        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div></div>
     </div>
 
-    <div id="install-lock" class="hidden fixed inset-0 z-[200] bg-white/80 dark:bg-black/80 flex flex-col items-center justify-center text-center transition-colors">
-        <div class="w-20 h-20 border-4 border-red-900/50 border-t-red-500 rounded-full animate-spin mb-6"></div>
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">INSTALLING COMPONENT</h2>
-        <p class="text-red-600 dark:text-red-400 font-mono animate-pulse">DO NOT LEAVE THIS PAGE</p>
+    <div id="install-lock" class="hidden fixed inset-0 z-[200] bg-white/85 dark:bg-black/85 flex flex-col items-center justify-center text-center transition-colors">
+        <div class="w-20 h-20 border-4 border-rose-900/50 border-t-rose-500 rounded-full animate-spin mb-6"></div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 font-mono">INSTALLING COMPONENT</h2>
+        <p class="text-rose-600 dark:text-rose-400 font-mono text-sm animate-pulse">DO NOT LEAVE THIS PAGE</p>
         <p id="lock-msg" class="text-gray-500 mt-4 text-sm max-w-md">System operations in progress...</p>
     </div>
 
-    <div class="max-w-[1600px] mx-auto">
-        <div class="flex flex-wrap gap-4 justify-between items-center mb-8 pb-4 border-b border-gray-300 dark:border-gray-700">
-            <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold tracking-tight text-gray-800 dark:text-white">Security<span class="text-red-600 dark:text-red-500 font-light">Center</span></h1>
-            </div>
-            <?php $activePage = 'security'; require __DIR__ . '/partials/nav.php'; ?>
-        </div>
+    <?php $activePage = 'security'; require __DIR__ . '/partials/nav.php'; ?>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-3 space-y-4">
-                <?php foreach($TOOLS as $key => $tool): ?>
-                <div id="card-<?= $key ?>" class="card p-4 relative overflow-hidden group transition hover:border-gray-400 dark:hover:border-gray-600">
-                    <div class="absolute top-0 right-0 p-2">
-                        <div id="status-dot-<?= $key ?>" class="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                    </div>
-                    <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1"><?= $tool['name'] ?></h3>
-                    <p class="text-xs text-gray-500 mb-4 font-mono">Binary: <?= basename($tool['bin']) ?></p>
-
-                    <div class="flex flex-col gap-2" id="actions-<?= $key ?>">
-                        <button onclick="installTool('<?= $key ?>')" id="btn-inst-<?= $key ?>" class="btn btn-soft-red w-full text-xs">INSTALL NOW</button>
-                        <button onclick="openTab('<?= $key ?>')" id="btn-open-<?= $key ?>" class="hidden btn btn-neutral w-full text-xs">OPEN PANEL</button>
-                    </div>
-                </div>
-                <?php endforeach; ?>
+    <main class="flex-1 min-w-0 p-6 lg:p-10">
+        <div class="max-w-[1500px] mx-auto">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Security Center</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-500 font-mono mt-1">install, scan &amp; review host-level tooling</p>
             </div>
 
-            <div class="lg:col-span-9">
-                <div id="panel-welcome" class="card p-10 text-center h-full flex flex-col items-center justify-center opacity-60">
-                    <svg class="w-20 h-20 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    <h2 class="text-2xl font-bold text-gray-500 dark:text-gray-400">Select a Security Tool</h2>
-                    <p class="text-gray-500 mt-2">Install tools via the sidebar to begin scanning.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-3 space-y-3">
+                    <?php foreach($TOOLS as $key => $tool): ?>
+                    <div id="card-<?= $key ?>" class="card p-4 relative overflow-hidden group transition hover:border-accent-500/40">
+                        <div class="absolute top-3 right-3">
+                            <div id="status-dot-<?= $key ?>" class="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-line"></div>
+                        </div>
+                        <h3 class="font-bold text-sm text-gray-900 dark:text-white mb-1"><?= $tool['name'] ?></h3>
+                        <p class="text-xs text-gray-500 mb-4 font-mono">bin: <?= basename($tool['bin']) ?></p>
+
+                        <div class="flex flex-col gap-2" id="actions-<?= $key ?>">
+                            <button onclick="installTool('<?= $key ?>')" id="btn-inst-<?= $key ?>" class="btn btn-outline-red w-full text-xs">INSTALL NOW</button>
+                            <button onclick="openTab('<?= $key ?>')" id="btn-open-<?= $key ?>" class="hidden btn btn-neutral w-full text-xs">OPEN PANEL</button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
 
-                <?php foreach($TOOLS as $key => $tool): ?>
-                <div id="panel-<?= $key ?>" class="hidden flex flex-col h-full space-y-6">
-                    <div class="card p-6 shadow-xl">
-                        <div class="flex justify-between items-start mb-6">
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
-                                    <?= $tool['name'] ?>
-                                    <span class="badge bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800">INSTALLED</span>
-                                </h2>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Scanner Ready. Default mode is <strong>Detect & Report</strong>.</p>
+                <div class="lg:col-span-9">
+                    <div id="panel-welcome" class="card p-10 text-center h-full flex flex-col items-center justify-center opacity-70">
+                        <svg class="w-16 h-16 text-gray-300 dark:text-line mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <h2 class="text-lg font-bold text-gray-500 dark:text-gray-400 font-mono">select a security tool</h2>
+                        <p class="text-gray-500 mt-2 text-sm">Install tools via the sidebar to begin scanning.</p>
+                    </div>
+
+                    <?php foreach($TOOLS as $key => $tool): ?>
+                    <div id="panel-<?= $key ?>" class="hidden flex flex-col h-full space-y-6">
+                        <div class="card p-6">
+                            <div class="flex justify-between items-start mb-6">
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                        <?= $tool['name'] ?>
+                                        <span class="badge bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400">INSTALLED</span>
+                                    </h2>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Scanner ready. Default mode is <strong>Detect &amp; Report</strong>.</p>
+                                </div>
+                                <button onclick="removeTool('<?= $key ?>')" class="text-xs text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 hover:underline">Uninstall Tool</button>
                             </div>
-                            <button onclick="removeTool('<?= $key ?>')" class="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-300 hover:underline">Uninstall Tool</button>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="runScan('<?= $key ?>')" class="btn btn-primary py-3.5 text-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    RUN SCAN
+                                </button>
+                                <button onclick="fetchLog('<?= $key ?>')" class="btn btn-neutral py-3.5 text-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    VIEW REPORT
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="runScan('<?= $key ?>')" class="btn btn-primary py-4 text-base">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                RUN SCAN
-                            </button>
-                            <button onclick="fetchLog('<?= $key ?>')" class="btn btn-neutral py-4 text-base">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                VIEW REPORT
-                            </button>
+                        <div class="flex-1 bg-term rounded-xl border border-line flex flex-col overflow-hidden">
+                            <div class="bg-surface px-4 py-2 border-b border-line flex justify-between items-center">
+                                <span class="text-xs font-mono text-gray-500">root@server:~/security/<?= $key ?># output</span>
+                                <span id="status-<?= $key ?>" class="text-xs font-mono font-bold text-gray-500 uppercase">IDLE</span>
+                            </div>
+                            <div id="term-<?= $key ?>" class="terminal-box p-4 font-mono text-sm text-accent-400 whitespace-pre-wrap">Waiting for command...</div>
                         </div>
                     </div>
-
-                    <div class="flex-1 bg-white dark:bg-[#0c0c0c] rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden shadow-2xl">
-                        <div class="bg-gray-100 dark:bg-gray-800/80 px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                            <span class="text-xs font-mono text-gray-500">root@server:~/security/<?= $key ?># output</span>
-                            <span id="status-<?= $key ?>" class="text-xs font-bold text-gray-500 uppercase">IDLE</span>
-                        </div>
-                        <div id="term-<?= $key ?>" class="terminal-box p-4 font-mono text-sm text-gray-800 dark:text-green-400 whitespace-pre-wrap">Waiting for command...</div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
-                <?php endforeach; ?>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         const TOKEN = '<?= $SECRET_TOKEN ?>';
@@ -238,11 +240,11 @@ $pageTitle = 'Security Center';
                 const btnOpen = document.getElementById(`btn-open-${tool}`);
 
                 if (exists) {
-                    dot.className = "w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] status-dot-pulse";
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-accent-500 status-dot-pulse";
                     btnInst.classList.add('hidden');
                     btnOpen.classList.remove('hidden');
                 } else {
-                    dot.className = "w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]";
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
                     btnInst.classList.remove('hidden');
                     btnOpen.classList.add('hidden');
                     // If this panel is open but tool got removed
@@ -264,11 +266,11 @@ $pageTitle = 'Security Center';
                 text: "This may take a minute. Do not leave the page.",
                 icon: 'info',
                 showCancelButton: true,
-                confirmButtonColor: '#0082c9',
+                confirmButtonColor: '#0d9488',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Install',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
             });
             if (!result.isConfirmed) return;
 
@@ -284,12 +286,12 @@ $pageTitle = 'Security Center';
                 document.getElementById('install-lock').classList.add('hidden');
                 checkTools();
                 if (res.status === 'done') {
-                    Swal.fire({ icon: 'success', title: 'Installed', text: res.output, background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
+                    Swal.fire({ icon: 'success', title: 'Installed', text: res.output, background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
                 }
             } catch (e) {
                 isLocked = false;
                 document.getElementById('install-lock').classList.add('hidden');
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Connection Failed', background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Connection Failed', background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff', color: document.documentElement.classList.contains('dark') ? '#fff' : '#000' });
             }
         }
 
@@ -299,11 +301,11 @@ $pageTitle = 'Security Center';
                 text: "Are you sure you want to remove this tool?",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
+                confirmButtonColor: '#e11d48',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Uninstall',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937'
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#e6e9ef' : '#1f2937'
             });
             if (!result.isConfirmed) return;
 
