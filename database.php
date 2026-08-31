@@ -111,20 +111,14 @@ foreach(explode("\n", $procs_raw) as $row) {
 
 $pageTitle = 'Database Manager';
 ?>
-
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
 <?php require __DIR__ . '/partials/head.php'; ?>
-<style>
-    .glass-panel { background: #ffffff; border: 1px solid #e5e7eb; }
-    .dark .glass-panel { background: rgba(31, 41, 55, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.4); }
-</style>
 </head>
-<body class="font-sans min-h-screen flex flex-col bg-gray-100 text-gray-900 dark:bg-[#0d1117] dark:text-gray-200">
-
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-gray-900 flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-16 h-16 border-4 border-blue-900/30 border-t-[#0082c9] rounded-full animate-spin"></div></div>
+<body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
+    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
+        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div></div>
     </div>
     <script>
         window.onload=()=>{const l=document.getElementById('global-loader');l.classList.add('opacity-0','pointer-events-none');setTimeout(()=>l.style.display='none',500);}
@@ -134,7 +128,7 @@ $pageTitle = 'Database Manager';
                 icon: '<?= $msgType ?>',
                 title: '<?= $msgType == "success" ? "Success" : "Error" ?>',
                 text: '<?= addslashes($message) ?>',
-                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff',
+                background: document.documentElement.classList.contains('dark') ? '#11161f' : '#fff',
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
             });
         });
@@ -151,154 +145,152 @@ $pageTitle = 'Database Manager';
         }
     </script>
 
-    <header class="bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 px-6 py-4 flex flex-wrap gap-4 justify-between items-center shrink-0 sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div class="bg-yellow-100 dark:bg-yellow-600/20 p-2 rounded-lg border border-yellow-200 dark:border-yellow-600/50">
-                <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
-            </div>
-            <span class="font-bold text-xl text-gray-800 dark:text-white">Data<span class="text-yellow-600 dark:text-yellow-500 font-light">Base</span></span>
-        </div>
-        <?php $activePage = 'database'; require __DIR__ . '/partials/nav.php'; ?>
-    </header>
+    <?php $activePage = 'database'; require __DIR__ . '/partials/nav.php'; ?>
 
-    <div class="p-6 max-w-[1600px] mx-auto w-full space-y-6">
-
-        <?php if (!$sudoOk): ?>
-        <div class="glass-panel rounded-xl p-4 border-l-4 border-l-amber-500 flex items-start gap-3">
-            <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
-            <div class="text-sm">
-                <p class="font-bold text-amber-600 dark:text-amber-400">Passwordless sudo isn't configured for this shell</p>
-                <p class="text-gray-500 dark:text-gray-400 mt-1">Every <code class="bg-black/10 dark:bg-white/10 px-1 rounded">sudo mysql</code> call below is filtered for sudo's boilerplate output, but empty results here likely mean the underlying command never actually ran. Set up <code class="bg-black/10 dark:bg-white/10 px-1 rounded">/root/.my.cnf</code> or a NOPASSWD sudoers rule for the web user, per the comment in <code class="bg-black/10 dark:bg-white/10 px-1 rounded">run_sql_cmd()</code>.</p>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="glass-panel p-5 rounded-xl shadow-lg">
-                <h3 class="section-eyebrow mb-3">Create Database</h3>
-                <form method="POST" class="flex gap-2">
-                    <input type="hidden" name="action" value="create_db">
-                    <input type="text" name="db_name" placeholder="new_db_name" class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500/40 focus:border-yellow-500 focus:outline-none" required pattern="[a-zA-Z0-9_]+">
-                    <button type="submit" class="btn btn-soft-green">Create</button>
-                </form>
+    <main class="flex-1 min-w-0 p-6 lg:p-10">
+        <div class="max-w-[1500px] mx-auto space-y-6">
+            <div class="mb-2">
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Database</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-500 font-mono mt-1">mysql instance management</p>
             </div>
 
-            <div class="glass-panel p-5 rounded-xl shadow-lg flex flex-col justify-center gap-3">
-                <div class="flex gap-2">
-                    <a href="<?= $PMA_URL ?>" target="_blank" class="btn btn-soft-blue flex-1 group">
-                        <svg class="w-4 h-4 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                        Open PHPMyAdmin
-                    </a>
-                    <form method="POST" class="flex-1">
-                        <input type="hidden" name="action" value="optimize_all">
-                        <button type="submit" class="btn btn-neutral w-full">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            Optimize & Repair
-                        </button>
+            <?php if (!$sudoOk): ?>
+            <div class="card p-4 flex items-start gap-3" style="border-left:2px solid #f59e0b">
+                <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
+                <div class="text-sm">
+                    <p class="font-bold text-amber-600 dark:text-amber-400">Passwordless sudo isn't configured for this shell</p>
+                    <p class="text-gray-500 dark:text-gray-400 mt-1">Every <code class="font-mono bg-gray-100 dark:bg-surface2 px-1 rounded">sudo mysql</code> call below is filtered for sudo's boilerplate output, but empty results here likely mean the underlying command never actually ran. Set up <code class="font-mono bg-gray-100 dark:bg-surface2 px-1 rounded">/root/.my.cnf</code> or a NOPASSWD sudoers rule for the web user, per the comment in <code class="font-mono bg-gray-100 dark:bg-surface2 px-1 rounded">run_sql_cmd()</code>.</p>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card p-5">
+                    <h3 class="section-eyebrow mb-3">Create Database</h3>
+                    <form method="POST" class="flex gap-2">
+                        <input type="hidden" name="action" value="create_db">
+                        <input type="text" name="db_name" placeholder="new_db_name" class="flex-1 bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line rounded-lg px-3 py-2 text-sm font-mono text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 focus:outline-none" required pattern="[a-zA-Z0-9_]+">
+                        <button type="submit" class="btn btn-outline-green">Create</button>
+                    </form>
+                </div>
+
+                <div class="card p-5 flex flex-col justify-center gap-3">
+                    <div class="flex gap-2">
+                        <a href="<?= $PMA_URL ?>" target="_blank" class="btn btn-violet flex-1 group">
+                            <svg class="w-4 h-4 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            PHPMyAdmin
+                        </a>
+                        <form method="POST" class="flex-1">
+                            <input type="hidden" name="action" value="optimize_all">
+                            <button type="submit" class="btn btn-neutral w-full">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                Optimize
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card p-5">
+                    <h3 class="section-eyebrow mb-3">Create User</h3>
+                    <form method="POST" class="flex flex-col gap-2">
+                        <input type="hidden" name="action" value="create_user">
+                        <div class="flex gap-2">
+                            <input type="text" name="new_user" placeholder="Username" class="w-1/2 bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line rounded-lg px-3 py-2 text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/30" required>
+                            <input type="text" name="new_pass" placeholder="Password" class="w-1/2 bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line rounded-lg px-3 py-2 text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/30" required>
+                        </div>
+                        <button type="submit" class="btn btn-neutral w-full">Add User</button>
                     </form>
                 </div>
             </div>
 
-            <div class="glass-panel p-5 rounded-xl shadow-lg">
-                <h3 class="section-eyebrow mb-3">Create User</h3>
-                <form method="POST" class="flex flex-col gap-2">
-                    <input type="hidden" name="action" value="create_user">
-                    <div class="flex gap-2">
-                        <input type="text" name="new_user" placeholder="Username" class="w-1/2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/40" required>
-                        <input type="text" name="new_pass" placeholder="Password" class="w-1/2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/40" required>
-                    </div>
-                    <button type="submit" class="btn btn-neutral w-full">Add User</button>
-                </form>
-            </div>
-        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[500px]">
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[500px]">
-
-            <div class="lg:col-span-8 glass-panel rounded-xl shadow-lg flex flex-col overflow-hidden">
-                <div class="bg-gray-50 dark:bg-gray-800/80 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-white">Databases <span class="badge bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"><?= count($dbs) ?></span></h2>
-                    <div class="badge bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-500 font-mono">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        SAFE MODE ACTIVE
-                    </div>
-                </div>
-                <div class="overflow-y-auto p-4 space-y-2">
-                    <?php if (empty($dbs)): ?>
-                        <div class="empty-state">No databases found<?= $sudoOk ? '' : ' — sudo could not run the query (see warning above)' ?>.</div>
-                    <?php else: foreach($dbs as $db): ?>
-                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-yellow-400/60 transition">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-blue-100 dark:bg-blue-900/20 p-2 rounded text-blue-600 dark:text-blue-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4"></path></svg></div>
-                            <span class="font-mono font-bold text-gray-700 dark:text-gray-300"><?= htmlspecialchars($db) ?></span>
+                <div class="lg:col-span-8 card flex flex-col overflow-hidden">
+                    <div class="bg-gray-50 dark:bg-surface2 px-6 py-4 border-b border-gray-200 dark:border-line flex justify-between items-center">
+                        <h2 class="text-sm font-bold text-gray-900 dark:text-white">Databases <span class="badge bg-gray-100 dark:bg-surface text-gray-500 dark:text-gray-400"><?= count($dbs) ?></span></h2>
+                        <div class="badge bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            SAFE MODE
                         </div>
                     </div>
-                    <?php endforeach; endif; ?>
-                </div>
-            </div>
-
-            <div class="lg:col-span-4 glass-panel rounded-xl shadow-lg flex flex-col overflow-hidden">
-                <div class="bg-gray-50 dark:bg-gray-800/80 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-white">Users & Access</h2>
-                </div>
-
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30">
-                    <h4 class="section-eyebrow mb-2">Quick Grant Access</h4>
-                    <form method="POST" class="grid grid-cols-1 gap-2">
-                        <input type="hidden" name="action" value="grant_priv">
-                        <select name="grant_user" class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-xs text-gray-700 dark:text-gray-300">
-                            <?php foreach($users as $u) echo "<option value='" . htmlspecialchars($u) . "'>" . htmlspecialchars($u) . "</option>"; ?>
-                        </select>
-                        <select name="grant_db" class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-xs text-gray-700 dark:text-gray-300">
-                            <?php foreach($dbs as $d) echo "<option value='" . htmlspecialchars($d) . "'>" . htmlspecialchars($d) . "</option>"; ?>
-                        </select>
-                        <button class="btn btn-soft-blue text-xs">Grant All Privileges</button>
-                    </form>
-                </div>
-
-                <div class="overflow-y-auto flex-1 p-4 space-y-2">
-                    <?php if (empty($users)): ?>
-                        <div class="empty-state">No users found<?= $sudoOk ? '' : ' — sudo could not run the query' ?>.</div>
-                    <?php else: foreach($users as $user): ?>
-                    <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span class="font-mono text-xs"><?= htmlspecialchars($user) ?></span>
+                    <div class="overflow-y-auto p-4 space-y-2">
+                        <?php if (empty($dbs)): ?>
+                            <div class="empty-state">No databases found<?= $sudoOk ? '' : ' — sudo could not run the query (see warning above)' ?>.</div>
+                        <?php else: foreach($dbs as $db): ?>
+                        <div class="flex justify-between items-center bg-gray-50 dark:bg-surface2 p-3 rounded-lg border border-gray-200 dark:border-line hover:border-accent-500/50 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-7 h-7 rounded-md bg-violet-500/10 flex items-center justify-center text-violet-500"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4"></path></svg></div>
+                                <span class="font-mono text-sm font-semibold text-gray-700 dark:text-gray-300"><?= htmlspecialchars($db) ?></span>
+                            </div>
+                        </div>
+                        <?php endforeach; endif; ?>
                     </div>
-                    <?php endforeach; endif; ?>
+                </div>
+
+                <div class="lg:col-span-4 card flex flex-col overflow-hidden">
+                    <div class="bg-gray-50 dark:bg-surface2 px-6 py-4 border-b border-gray-200 dark:border-line">
+                        <h2 class="text-sm font-bold text-gray-900 dark:text-white">Users &amp; Access</h2>
+                    </div>
+
+                    <div class="p-4 border-b border-gray-200 dark:border-line bg-gray-50/60 dark:bg-surface2/60">
+                        <h4 class="section-eyebrow mb-2">Quick Grant Access</h4>
+                        <form method="POST" class="grid grid-cols-1 gap-2">
+                            <input type="hidden" name="action" value="grant_priv">
+                            <select name="grant_user" class="bg-white dark:bg-surface border border-gray-200 dark:border-line rounded-lg p-2 text-xs font-mono text-gray-700 dark:text-gray-300">
+                                <?php foreach($users as $u) echo "<option value='" . htmlspecialchars($u) . "'>" . htmlspecialchars($u) . "</option>"; ?>
+                            </select>
+                            <select name="grant_db" class="bg-white dark:bg-surface border border-gray-200 dark:border-line rounded-lg p-2 text-xs font-mono text-gray-700 dark:text-gray-300">
+                                <?php foreach($dbs as $d) echo "<option value='" . htmlspecialchars($d) . "'>" . htmlspecialchars($d) . "</option>"; ?>
+                            </select>
+                            <button class="btn btn-violet text-xs">Grant All Privileges</button>
+                        </form>
+                    </div>
+
+                    <div class="overflow-y-auto flex-1 p-4 space-y-2">
+                        <?php if (empty($users)): ?>
+                            <div class="empty-state">No users found<?= $sudoOk ? '' : ' — sudo could not run the query' ?>.</div>
+                        <?php else: foreach($users as $user): ?>
+                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="w-1.5 h-1.5 rounded-full bg-accent-500"></div>
+                            <span class="font-mono text-xs"><?= htmlspecialchars($user) ?></span>
+                        </div>
+                        <?php endforeach; endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card overflow-hidden">
+                <div class="bg-gray-50 dark:bg-surface2 px-6 py-3 border-b border-gray-200 dark:border-line flex justify-between">
+                    <h2 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span class="text-accent-500">●</span> Active Processes
+                    </h2>
+                    <span class="text-xs text-gray-500 font-mono">LIVE VIEW</span>
+                </div>
+                <div class="overflow-x-auto max-h-60">
+                    <?php if (empty($procs)): ?>
+                    <div class="empty-state">No active processes.</div>
+                    <?php else: ?>
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-gray-50 dark:bg-surface2 text-gray-500 uppercase sticky top-0">
+                            <tr><th class="p-3">ID</th><th class="p-3">User</th><th class="p-3">DB</th><th class="p-3">Command</th><th class="p-3">Time</th><th class="p-3">State</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-line">
+                            <?php foreach($procs as $row): if(count($row) < 6) continue; ?>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-surface2">
+                                <td class="p-3 text-gray-500"><?= htmlspecialchars($row[0]) ?></td>
+                                <td class="p-3 text-violet-500"><?= htmlspecialchars($row[1]) ?></td>
+                                <td class="p-3 text-accent-600 dark:text-accent-400"><?= htmlspecialchars($row[3]) ?></td>
+                                <td class="p-3 text-gray-800 dark:text-white"><?= htmlspecialchars($row[4]) ?></td>
+                                <td class="p-3 <?= $row[5] > 10 ? 'text-rose-500 font-bold' : 'text-gray-500 dark:text-gray-400' ?>"><?= htmlspecialchars($row[5]) ?>s</td>
+                                <td class="p-3 text-gray-500 dark:text-gray-400"><?= htmlspecialchars($row[6] ?? '') ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-
-        <div class="glass-panel rounded-xl shadow-lg overflow-hidden">
-            <div class="bg-gray-50 dark:bg-gray-800/80 px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between">
-                <h2 class="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <span class="text-green-500">●</span> Active Processes
-                </h2>
-                <span class="text-xs text-gray-500 font-mono">LIVE VIEW</span>
-            </div>
-            <div class="overflow-x-auto max-h-60">
-                <?php if (empty($procs)): ?>
-                <div class="empty-state">No active processes.</div>
-                <?php else: ?>
-                <table class="w-full text-left text-xs font-mono">
-                    <thead class="bg-gray-100 dark:bg-gray-900 text-gray-500 uppercase sticky top-0">
-                        <tr><th class="p-3">ID</th><th class="p-3">User</th><th class="p-3">DB</th><th class="p-3">Command</th><th class="p-3">Time</th><th class="p-3">State</th></tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-transparent">
-                        <?php foreach($procs as $row): if(count($row) < 6) continue; ?>
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                            <td class="p-3 text-gray-500"><?= htmlspecialchars($row[0]) ?></td>
-                            <td class="p-3 text-blue-600 dark:text-blue-400"><?= htmlspecialchars($row[1]) ?></td>
-                            <td class="p-3 text-yellow-600 dark:text-yellow-500"><?= htmlspecialchars($row[3]) ?></td>
-                            <td class="p-3 text-gray-800 dark:text-white"><?= htmlspecialchars($row[4]) ?></td>
-                            <td class="p-3 <?= $row[5] > 10 ? 'text-red-500 font-bold' : 'text-gray-500 dark:text-gray-400' ?>"><?= htmlspecialchars($row[5]) ?>s</td>
-                            <td class="p-3 text-gray-500 dark:text-gray-400"><?= htmlspecialchars($row[6] ?? '') ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
+    </main>
 </body>
 </html>
