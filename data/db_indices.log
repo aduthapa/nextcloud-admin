@@ -1,0 +1,4 @@
+Could not resolve UserManager! Class "UserManager" does not exist
+Adding additional mail_recip_eml_type_mid_idx index to the oc_mail_recipients table, this can take some time...
+Removing mail_recipient_email_idx index from the oc_mail_recipients table
+oc_mail_recipients table updated successfully.
