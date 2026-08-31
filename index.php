@@ -118,12 +118,7 @@ $pageTitle = 'NC Dashboard';
 <?php require __DIR__ . '/partials/head.php'; ?>
 </head>
 <body class="font-sans min-h-screen flex bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div><div class="mt-4 text-accent-400 font-mono text-xs font-bold tracking-widest animate-pulse">LOADING</div></div>
-    </div>
-    <script>
-        window.addEventListener('load', () => { const l = document.getElementById('global-loader'); l.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => l.style.display = 'none', 500); });
-    </script>
+    <?php require __DIR__ . '/partials/loader.php'; ?>
 
     <?php $activePage = 'dashboard'; $showStatusBar = true; require __DIR__ . '/partials/nav.php'; ?>
 
@@ -145,7 +140,10 @@ $pageTitle = 'NC Dashboard';
                     <div id="tab-nextcloud" class="tab-content space-y-6 fade-in">
                         <div class="card p-6">
                             <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Plugin Manager</h2>
+                                <div class="flex items-center gap-3">
+                                    <div class="icon-badge bg-violet-500/10 text-violet-500"><svg class="w-4.5 h-4.5" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 4a2 2 0 114 0v1h2.5a1.5 1.5 0 011.5 1.5V9h1a2 2 0 110 4h-1v2.5a1.5 1.5 0 01-1.5 1.5H15v1a2 2 0 11-4 0v-1h-2.5A1.5 1.5 0 017 15.5V13H5.5A1.5 1.5 0 014 11.5v-3A1.5 1.5 0 015.5 7H7V5.5A1.5 1.5 0 018.5 4H11v0z"/></svg></div>
+                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Plugin Manager</h2>
+                                </div>
                                 <span class="section-eyebrow">occ app:*</span>
                             </div>
                             <div class="flex flex-col sm:flex-row gap-3 mb-3">
@@ -163,7 +161,10 @@ $pageTitle = 'NC Dashboard';
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="card p-6">
                                 <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Maintenance</h2>
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-blue-500/10 text-blue-500"><svg class="w-4.5 h-4.5" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.077-3.078a6 6 0 01-7.94 7.94l-6.816 6.816a2.121 2.121 0 01-3-3l6.816-6.816a6 6 0 017.94-7.94l-3.07 3.07z"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Maintenance</h2>
+                                    </div>
                                     <span class="section-eyebrow">Routine</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
@@ -177,7 +178,10 @@ $pageTitle = 'NC Dashboard';
                             </div>
                             <div class="card p-6">
                                 <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Heavy Operations</h2>
+                                    <div class="flex items-center gap-3">
+                                        <div class="icon-badge bg-amber-500/10 text-amber-500"><svg class="w-4.5 h-4.5" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                                        <h2 class="text-base font-bold text-gray-900 dark:text-white">Heavy Operations</h2>
+                                    </div>
                                     <span class="section-eyebrow">Async</span>
                                 </div>
                                 <div class="space-y-3">
@@ -238,7 +242,7 @@ $pageTitle = 'NC Dashboard';
                             <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-500/70"></span><span class="w-2 h-2 rounded-full bg-amber-500/70"></span><span class="w-2 h-2 rounded-full bg-accent-500/70"></span><span class="text-xs font-mono text-gray-500 ml-2">admin@nc:~# output</span></div>
                             <button onclick="clearLog()" class="text-xs font-mono text-gray-500 hover:text-white font-bold tracking-wider ml-auto">CLEAR</button>
                         </div>
-                        <div id="terminal" class="terminal-box flex-1 p-4 font-mono text-xs sm:text-sm text-accent-400 whitespace-pre-wrap break-all bg-term"><span class="text-gray-600">// Ready...</span></div>
+                        <div id="terminal" class="terminal-box flex-1 p-4 font-mono text-xs sm:text-sm text-accent-400 whitespace-pre-wrap break-all bg-term"><span class="text-gray-600">// Ready...</span><span class="term-cursor text-accent-400"></span></div>
                     </div>
                 </div>
             </div>

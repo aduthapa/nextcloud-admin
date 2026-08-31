@@ -38,6 +38,9 @@
     } else {
         document.documentElement.classList.remove('dark');
     }
+    if (localStorage.loaderLogo === 'off') {
+        document.documentElement.classList.add('no-loader-logo');
+    }
 </script>
 <style>
     html, body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
@@ -59,9 +62,16 @@
     .dark .tab-btn.active { color: #5eead4; }
 
     /* Card language: flat surfaces, hairline borders, accent-on-hover, no heavy shadows */
-    .card { background: #ffffff; border: 1px solid #e6e8ec; border-radius: 1rem; position: relative; }
+    .card { background: #ffffff; border: 1px solid #e6e8ec; border-radius: 1rem; position: relative; transition: border-color .15s ease, box-shadow .15s ease; }
     .dark .card { background: #11161f; border-color: #232a38; }
+    .card:hover { border-color: rgba(13,148,136,.35); box-shadow: 0 0 0 1px rgba(13,148,136,.08); }
+    .dark .card:hover { border-color: rgba(45,212,191,.3); box-shadow: 0 0 0 1px rgba(45,212,191,.06); }
     .card-accent { border-top: 2px solid #2dd4bf; }
+
+    .icon-badge { width: 2.25rem; height: 2.25rem; border-radius: .65rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .term-cursor { display: inline-block; width: 6px; height: 13px; background: currentColor; margin-left: 3px; vertical-align: -2px; animation: termBlink 1s step-end infinite; }
+    @keyframes termBlink { 50% { opacity: 0; } }
 
     .fade-in { animation: fadeIn .3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -103,4 +113,11 @@
     .dark .sb-link { color:#8a93a3; }
     .dark .sb-link:hover { background:#171d29; color:#e6e9ef; }
     .dark .sb-link.active { background:rgba(45,212,191,.1); color:#5eead4; border-left-color:#2dd4bf; }
+
+    /* Toggle switch (used by the sidebar's loader-logo control) */
+    .switch { position: relative; display: inline-flex; align-items: center; width: 34px; height: 20px; border-radius: 9999px; background: #d8dce3; transition: background .15s ease; flex-shrink: 0; border: none; padding: 0; cursor: pointer; }
+    .dark .switch { background: #2b3241; }
+    .switch.on { background: #0d9488; }
+    .switch .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 9999px; background: #fff; transition: transform .15s ease; }
+    .switch.on .knob { transform: translateX(14px); }
 </style>

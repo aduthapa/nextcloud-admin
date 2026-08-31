@@ -40,11 +40,32 @@ $__nav = [
             <svg id="sun-icon" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             <span>Toggle theme</span>
         </button>
-        <div class="flex items-center justify-between px-1 pt-1">
-            <span class="text-xs text-gray-500 dark:text-gray-500 truncate">
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg text-sm text-gray-500 dark:text-gray-400">
+            <span class="flex items-center gap-2.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path></svg>Loader logo</span>
+            <button type="button" id="loader-logo-switch" class="switch" onclick="toggleLoaderLogo()" aria-label="Toggle loader logo"><span class="knob"></span></button>
+        </div>
+        <div class="flex items-center gap-2.5 px-1 pt-1">
+            <div class="w-6 h-6 rounded-full bg-accent-600 text-white text-[.65rem] font-bold flex items-center justify-center shrink-0 uppercase">
+                <?= isset($_SESSION['admin_user']) ? htmlspecialchars(mb_substr($_SESSION['admin_user'], 0, 1)) : '?' ?>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-500 truncate flex-1">
                 <?= isset($_SESSION['admin_user']) ? htmlspecialchars($_SESSION['admin_user']) : '' ?>
             </span>
             <a href="/?logout=true" class="text-xs font-medium text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 transition">Logout</a>
         </div>
     </div>
 </aside>
+<script>
+    (function() {
+        const sw = document.getElementById('loader-logo-switch');
+        if (!sw) return;
+        sw.classList.toggle('on', localStorage.loaderLogo !== 'off');
+    })();
+    function toggleLoaderLogo() {
+        const sw = document.getElementById('loader-logo-switch');
+        const next = !sw.classList.contains('on');
+        sw.classList.toggle('on', next);
+        localStorage.loaderLogo = next ? 'on' : 'off';
+        document.documentElement.classList.toggle('no-loader-logo', !next);
+    }
+</script>

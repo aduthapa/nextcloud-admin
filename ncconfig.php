@@ -32,11 +32,8 @@ $pageTitle = 'Config Editor';
 </style>
 </head>
 <body class="h-screen flex overflow-hidden font-sans bg-gray-50 text-gray-900 dark:bg-ink dark:text-gray-100">
-    <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center"><div class="w-14 h-14 border-4 border-accent-700/30 border-t-accent-400 rounded-full animate-spin"></div></div>
-    </div>
+    <?php require __DIR__ . '/partials/loader.php'; ?>
     <script>
-        window.addEventListener('load', () => { const l = document.getElementById('global-loader'); l.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => l.style.display = 'none', 500); });
         <?php if ($message): ?>
         document.addEventListener('DOMContentLoaded', () => {
             Swal.fire({
