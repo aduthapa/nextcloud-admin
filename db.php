@@ -46,6 +46,18 @@ try {
     // Non-fatal, same reasoning as above.
 }
 
+// Panel-wide UI settings (currently just the loader's minimum display time).
+// Single row, same pattern as smtp_settings.
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS ui_settings (
+        id INT PRIMARY KEY,
+        min_loader_ms INT NOT NULL DEFAULT 2000
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $pdo->exec("INSERT IGNORE INTO ui_settings (id, min_loader_ms) VALUES (1, 2000)");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
 // Function to force login
 function require_login() {
     if (!isset($_SESSION['admin_user'])) {

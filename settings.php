@@ -35,6 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['status'=>'done','output'=>'SMTP Settings Saved.']);
         } catch (Exception $e) { echo json_encode(['error'=>$e->getMessage()]); } exit;
     }
+    if ($action === 'save_ui_settings') {
+        try {
+            $ms = max(0, min(10000, (int) ($input['min_loader_ms'] ?? 2000)));
+            $pdo->prepare("UPDATE ui_settings SET min_loader_ms=? WHERE id=1")->execute([$ms]);
+            audit_log('save_ui_settings', "min_loader_ms=$ms");
+            echo json_encode(['status'=>'done','output'=>'Loader timing saved.']);
+        } catch (Exception $e) { echo json_encode(['error'=>$e->getMessage()]); } exit;
+    }
     if ($action === 'save_profile') {
         try {
             $sql = "UPDATE admins SET username=?, email=? WHERE username=?";
@@ -72,6 +80,8 @@ try {
     if (!$smtp) $smtp = ['host'=>'','port'=>'587','username'=>'','password'=>'','encryption'=>'tls','from_email'=>'','from_name'=>''];
     $me = $pdo->prepare("SELECT * FROM admins WHERE username=?"); $me->execute([$_SESSION['admin_user']]); $profile = $me->fetch(PDO::FETCH_ASSOC);
     if (!$profile) $profile = ['username'=>'Unknown','email'=>''];
+    $uiRow = $pdo->query("SELECT * FROM ui_settings WHERE id=1")->fetch(PDO::FETCH_ASSOC);
+    $minLoaderMs = $uiRow ? (int) $uiRow['min_loader_ms'] : 2000;
 } catch (Exception $e) { die("DB Error: " . $e->getMessage()); }
 
 $pageTitle = 'NC Settings';
@@ -96,7 +106,7 @@ $pageTitle = 'NC Settings';
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-8 flex flex-col">
                     <div class="flex gap-1 mb-6 border-b border-gray-200 dark:border-line overflow-x-auto">
-                        <?php $tabs=['backup'=>'BACKUPS','users'=>'USERS','smtp'=>'SMTP','profile'=>'PROFILE','logs'=>'LOGS','cron'=>'CRON'];
+                        <?php $tabs=['backup'=>'BACKUPS','users'=>'USERS','smtp'=>'SMTP','profile'=>'PROFILE','logs'=>'LOGS','cron'=>'CRON','loader'=>'LOADER'];
                         foreach($tabs as $id=>$label) echo "<button onclick=\"switchTab('tab-$id')\" class=\"tab-btn px-4 py-2.5 transition whitespace-nowrap ".($id=='backup'?'active':'')."\">$label</button>"; ?>
                     </div>
 
@@ -164,6 +174,18 @@ $pageTitle = 'NC Settings';
                             </div>
                         </div>
                     </div>
+
+                    <div id="tab-loader" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-4 text-gray-900 dark:text-white">Loader Timing</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Minimum time the full-page loader stays on screen on every load, so it doesn't flash instantly on a fast connection. Applies panel-wide, for everyone.</p>
+                            <div class="flex items-center gap-3 mb-6">
+                                <input id="loader_secs" type="number" min="0" max="10" step="0.1" value="<?= htmlspecialchars((string) round($minLoaderMs / 1000, 1)) ?>" class="w-28 bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500">
+                                <span class="text-sm text-gray-500 dark:text-gray-400 font-mono">seconds (0-10)</span>
+                            </div>
+                            <button onclick="saveLoaderTiming()" class="btn btn-outline-green w-full">Save Loader Settings</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="xl:col-span-4">
@@ -199,6 +221,7 @@ $pageTitle = 'NC Settings';
         async function saveSmtp(){ const res=await callApi('save_smtp',{host:document.getElementById('smtp_host').value,port:document.getElementById('smtp_port').value,user:document.getElementById('smtp_user').value,pass:document.getElementById('smtp_pass').value,enc:document.getElementById('smtp_enc').value,email:document.getElementById('smtp_email').value,name:document.getElementById('smtp_name').value}); showResult(res); }
         async function saveProfile(){ const res=await callApi('save_profile',{new_user:document.getElementById('prof_user').value,new_email:document.getElementById('prof_email').value,new_pass:document.getElementById('prof_pass').value}); showResult(res); }
         async function viewLog(type){ const res=await callApi('get_server_log',{log_type:type}); log("--- LOG VIEW: "+type.toUpperCase()+" ---\n"+res.output,'system'); }
+        async function saveLoaderTiming(){ const secs=parseFloat(document.getElementById('loader_secs').value)||0; const res=await callApi('save_ui_settings',{min_loader_ms:Math.round(secs*1000)}); showResult(res); }
 
         function showResult(res) {
              if(res.error) {
