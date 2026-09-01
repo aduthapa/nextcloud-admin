@@ -24,7 +24,13 @@ try {
     .loader-ring { animation: loaderSpin 1.1s linear infinite; }
     @keyframes loaderSpin { to { transform: rotate(360deg); } }
 </style>
-<script>window.__loaderStart = Date.now();</script>
+<script>
+    window.__loaderStart = Date.now();
+    // Sidebar nav sets this right before navigating so an in-app click
+    // (Main Menu <-> Sub Menu, or between sub-menu items) gets a quick
+    // slide transition instead of the full boot loader - see partials/nav.php.
+    try { window.__skipLoader = sessionStorage.getItem('navTransition') === '1'; } catch (e) { window.__skipLoader = false; }
+</script>
 <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
     <div class="loader-with-logo flex flex-col items-center">
         <div class="relative mb-5">
@@ -43,9 +49,15 @@ try {
 </div>
 <script>
     (function() {
+        const l = document.getElementById('global-loader');
+        if (window.__skipLoader) {
+            // Arrived via a sidebar nav click - partials/nav.php is already
+            // playing its own slide transition, so just get out of the way.
+            l.style.display = 'none';
+            return;
+        }
         const MIN_MS = <?= (int) $minLoaderMs ?>;
         function hide() {
-            const l = document.getElementById('global-loader');
             l.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => l.style.display = 'none', 500);
         }
