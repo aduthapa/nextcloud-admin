@@ -28,6 +28,11 @@ $__activeParent = $activePage ?? '';
 $__inSection = isset($__nav[$__activeParent][3]);
 $__activeChild = $activeChild ?? ($__inSection ? $__nav[$__activeParent][3][0][0] : null);
 ?>
+<style>
+    #sidebar-nav.nav-enter-right { opacity: 0; transform: translateX(14px); }
+    #sidebar-nav.nav-enter-left { opacity: 0; transform: translateX(-14px); }
+    #sidebar-nav.nav-enter-active { opacity: 1; transform: translateX(0); transition: opacity .28s ease-out, transform .28s ease-out; }
+</style>
 <aside class="w-60 shrink-0 h-screen sticky top-0 flex flex-col bg-white dark:bg-surface border-r border-gray-200 dark:border-line">
     <div class="h-16 flex items-center gap-2.5 px-5 border-b border-gray-200 dark:border-line shrink-0">
         <div class="w-8 h-8 rounded-lg bg-accent-600 flex items-center justify-center shrink-0">
@@ -36,7 +41,7 @@ $__activeChild = $activeChild ?? ($__inSection ? $__nav[$__activeParent][3][0][0
         <span class="font-bold text-sm tracking-tight text-gray-900 dark:text-white leading-none">NC<span class="text-[#0d9488] dark:text-accent-400"> Admin</span></span>
     </div>
 
-    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+    <nav id="sidebar-nav" class="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
         <?php if ($__inSection): ?>
         <a href="/" class="sb-link !text-accent-600 dark:!text-accent-400 font-semibold mb-2">
             <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -104,4 +109,30 @@ $__activeChild = $activeChild ?? ($__inSection ? $__nav[$__activeParent][3][0][0
         localStorage.loaderLogo = next ? 'on' : 'off';
         document.documentElement.classList.toggle('no-loader-logo', !next);
     }
+
+    // Mark outgoing sidebar navigation so the destination page (see
+    // partials/loader.php) skips the full boot loader and instead plays the
+    // slide-in below - Main Menu <-> Sub Menu should feel instant, not reload.
+    document.querySelectorAll('#sidebar-nav .sb-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            try { sessionStorage.setItem('navTransition', '1'); } catch (err) {}
+        });
+    });
+
+    (function() {
+        let animate = false;
+        try { animate = sessionStorage.getItem('navTransition') === '1'; } catch (err) {}
+        if (!animate) return;
+        try { sessionStorage.removeItem('navTransition'); } catch (err) {}
+        const nav = document.getElementById('sidebar-nav');
+        if (!nav) return;
+        nav.classList.add(<?= $__inSection ? "'nav-enter-right'" : "'nav-enter-left'" ?>);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                nav.classList.add('nav-enter-active');
+                setTimeout(() => nav.classList.remove('nav-enter-right', 'nav-enter-left', 'nav-enter-active'), 320);
+            });
+        });
+    })();
 </script>
