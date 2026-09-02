@@ -1,6 +1,9 @@
 <?php
 // Public SP metadata - paste this URL (or its output) into Auth0's SAML2
 // Web App addon settings. No secrets in here, safe to expose unauthenticated.
+// db.php only opens the DB connection (no login required) so this can pick
+// up SP values saved from Settings -> Integrations.
+require __DIR__ . '/db.php';
 require __DIR__ . '/saml_config.php';
 
 header('Content-Type: application/xml');

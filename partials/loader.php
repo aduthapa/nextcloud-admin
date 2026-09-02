@@ -27,8 +27,8 @@ try {
 <script>
     window.__loaderStart = Date.now();
     // Sidebar nav sets this right before navigating so an in-app click
-    // (Main Menu <-> Sub Menu, or between sub-menu items) gets a quick
-    // slide transition instead of the full boot loader - see partials/nav.php.
+    // skips the full boot loader and shows the destination page instantly -
+    // see partials/nav.php.
     try { window.__skipLoader = sessionStorage.getItem('navTransition') === '1'; } catch (e) { window.__skipLoader = false; }
 </script>
 <div id="global-loader" class="fixed inset-0 z-[100] bg-ink flex items-center justify-center transition-opacity duration-500">
@@ -51,8 +51,8 @@ try {
     (function() {
         const l = document.getElementById('global-loader');
         if (window.__skipLoader) {
-            // Arrived via a sidebar nav click - partials/nav.php is already
-            // playing its own slide transition, so just get out of the way.
+            // Arrived via a sidebar nav click - skip the boot loader
+            // entirely so the destination page appears instantly.
             l.style.display = 'none';
             return;
         }

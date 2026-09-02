@@ -110,6 +110,38 @@ try {
     // Non-fatal, same reasoning as above.
 }
 
+// Hetzner Cloud API credentials - editable from Settings -> Integrations
+// instead of hand-editing hetzner_config.php. Single row, same pattern as
+// smtp_settings/ui_settings.
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hetzner_settings (
+        id INT PRIMARY KEY,
+        api_token VARCHAR(255) NOT NULL DEFAULT '',
+        server_id VARCHAR(32) NOT NULL DEFAULT ''
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $pdo->exec("INSERT IGNORE INTO hetzner_settings (id, api_token, server_id) VALUES (1, '', '')");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
+// Auth0 SAML SP + IDP settings - editable from Settings -> Integrations
+// instead of hand-editing saml_config.php.
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS saml_idp_settings (
+        id INT PRIMARY KEY,
+        sp_entity_id VARCHAR(255) NOT NULL DEFAULT '',
+        acs_url VARCHAR(255) NOT NULL DEFAULT '',
+        sls_url VARCHAR(255) NOT NULL DEFAULT '',
+        idp_entity_id VARCHAR(255) NOT NULL DEFAULT '',
+        idp_sso_url VARCHAR(255) NOT NULL DEFAULT '',
+        idp_slo_url VARCHAR(255) NOT NULL DEFAULT '',
+        idp_x509_cert TEXT NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $pdo->exec("INSERT IGNORE INTO saml_idp_settings (id, sp_entity_id, acs_url, sls_url, idp_entity_id, idp_sso_url, idp_slo_url, idp_x509_cert) VALUES (1, '', '', '', '', '', '', '')");
+} catch (PDOException $e) {
+    // Non-fatal, same reasoning as above.
+}
+
 // Function to force login
 function require_login() {
     if (!isset($_SESSION['admin_user'])) {

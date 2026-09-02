@@ -145,7 +145,7 @@ $tokenConfigured = strpos($HETZNER_API_TOKEN, 'CHANGE_THIS') === false;
 
             <?php if (!$tokenConfigured): ?>
             <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-lg text-sm mb-6">
-                <strong>Not configured yet.</strong> Edit <span class="font-mono">hetzner_config.php</span> with a real Hetzner Cloud API token (Project &rarr; Security &rarr; API Tokens).
+                <strong>Not configured yet.</strong> Add a real Hetzner Cloud API token in <a href="/settings#integrations" class="underline font-semibold hover:text-amber-800 dark:hover:text-amber-300">Settings &rarr; Integrations</a> (Hetzner Project &rarr; Security &rarr; API Tokens).
             </div>
             <?php elseif ($resolveError): ?>
             <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-lg text-sm mb-6"><?= htmlspecialchars($resolveError) ?></div>

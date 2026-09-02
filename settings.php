@@ -43,6 +43,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['status'=>'done','output'=>'Loader timing saved.']);
         } catch (Exception $e) { echo json_encode(['error'=>$e->getMessage()]); } exit;
     }
+    if ($action === 'save_hetzner_settings') {
+        try {
+            $check = $pdo->query("SELECT count(*) FROM hetzner_settings WHERE id=1")->fetchColumn();
+            if ($check == 0) $pdo->exec("INSERT INTO hetzner_settings (id, api_token, server_id) VALUES (1, '', '')");
+            $pdo->prepare("UPDATE hetzner_settings SET api_token=?, server_id=? WHERE id=1")
+                ->execute([trim($input['api_token'] ?? ''), trim($input['server_id'] ?? '')]);
+            audit_log('save_hetzner_settings');
+            echo json_encode(['status'=>'done','output'=>'Hetzner settings saved.']);
+        } catch (Exception $e) { echo json_encode(['error'=>$e->getMessage()]); } exit;
+    }
+    if ($action === 'save_saml_settings') {
+        try {
+            $check = $pdo->query("SELECT count(*) FROM saml_idp_settings WHERE id=1")->fetchColumn();
+            if ($check == 0) $pdo->exec("INSERT INTO saml_idp_settings (id, sp_entity_id, acs_url, sls_url, idp_entity_id, idp_sso_url, idp_slo_url, idp_x509_cert) VALUES (1, '', '', '', '', '', '', '')");
+            $sql = "UPDATE saml_idp_settings SET sp_entity_id=?, acs_url=?, sls_url=?, idp_entity_id=?, idp_sso_url=?, idp_slo_url=?, idp_x509_cert=? WHERE id=1";
+            $pdo->prepare($sql)->execute([
+                trim($input['sp_entity_id'] ?? ''), trim($input['acs_url'] ?? ''), trim($input['sls_url'] ?? ''),
+                trim($input['idp_entity_id'] ?? ''), trim($input['idp_sso_url'] ?? ''), trim($input['idp_slo_url'] ?? ''),
+                trim($input['idp_x509_cert'] ?? ''),
+            ]);
+            audit_log('save_saml_settings');
+            echo json_encode(['status'=>'done','output'=>'Auth0 SAML settings saved.']);
+        } catch (Exception $e) { echo json_encode(['error'=>$e->getMessage()]); } exit;
+    }
     if ($action === 'save_profile') {
         try {
             $sql = "UPDATE admins SET username=?, email=? WHERE username=?";
@@ -82,7 +106,13 @@ try {
     if (!$profile) $profile = ['username'=>'Unknown','email'=>''];
     $uiRow = $pdo->query("SELECT * FROM ui_settings WHERE id=1")->fetch(PDO::FETCH_ASSOC);
     $minLoaderMs = $uiRow ? (int) $uiRow['min_loader_ms'] : 2000;
+    $hetznerRow = $pdo->query("SELECT * FROM hetzner_settings WHERE id=1")->fetch(PDO::FETCH_ASSOC);
+    if (!$hetznerRow) $hetznerRow = ['api_token'=>'','server_id'=>''];
+    $samlRow = $pdo->query("SELECT * FROM saml_idp_settings WHERE id=1")->fetch(PDO::FETCH_ASSOC);
+    if (!$samlRow) $samlRow = ['sp_entity_id'=>'','acs_url'=>'','sls_url'=>'','idp_entity_id'=>'','idp_sso_url'=>'','idp_slo_url'=>'','idp_x509_cert'=>''];
 } catch (Exception $e) { die("DB Error: " . $e->getMessage()); }
+
+$ipt = "bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full";
 
 $pageTitle = 'NC Settings';
 ?>
@@ -106,8 +136,8 @@ $pageTitle = 'NC Settings';
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-8 flex flex-col">
                     <div class="flex gap-1 mb-6 border-b border-gray-200 dark:border-line overflow-x-auto">
-                        <?php $tabs=['backup'=>'BACKUPS','users'=>'USERS','smtp'=>'SMTP','profile'=>'PROFILE','logs'=>'LOGS','cron'=>'CRON','loader'=>'LOADER'];
-                        foreach($tabs as $id=>$label) echo "<button onclick=\"switchTab('tab-$id')\" class=\"tab-btn px-4 py-2.5 transition whitespace-nowrap ".($id=='backup'?'active':'')."\">$label</button>"; ?>
+                        <?php $tabs=['backup'=>'BACKUPS','users'=>'USERS','smtp'=>'SMTP','integrations'=>'INTEGRATIONS','profile'=>'PROFILE','logs'=>'LOGS','cron'=>'CRON','loader'=>'LOADER'];
+                        foreach($tabs as $id=>$label) echo "<button data-tab=\"tab-$id\" onclick=\"switchTab('tab-$id')\" class=\"tab-btn px-4 py-2.5 transition whitespace-nowrap ".($id=='backup'?'active':'')."\">$label</button>"; ?>
                     </div>
 
                     <div id="tab-backup" class="tab-content space-y-6 fade-in">
@@ -139,6 +169,33 @@ $pageTitle = 'NC Settings';
                                 <input id="smtp_email" placeholder="From Email" value="<?= htmlspecialchars($smtp['from_email']) ?>" class="bg-gray-50 dark:bg-surface2 border border-gray-200 dark:border-line text-gray-900 dark:text-white rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 w-full col-span-2">
                             </div>
                             <button onclick="saveSmtp()" class="btn btn-outline-green w-full">Save SMTP Settings</button>
+                        </div>
+                    </div>
+
+                    <div id="tab-integrations" class="tab-content hidden space-y-6">
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-1 text-gray-900 dark:text-white">Hetzner Cloud API</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Powers Nextcloud &rarr; Hetzner Management. Generate a Read &amp; Write token in the Hetzner Cloud Console: Project &rarr; Security &rarr; API Tokens.</p>
+                            <div class="space-y-4 mb-4">
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">api token</label><input id="hz_token" type="password" placeholder="Hetzner API token" value="<?= htmlspecialchars($hetznerRow['api_token']) ?>" class="<?= $ipt ?>"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">server id <span class="normal-case font-sans">(optional - only needed if the project has more than one server)</span></label><input id="hz_server_id" placeholder="e.g. 12345678" value="<?= htmlspecialchars($hetznerRow['server_id']) ?>" class="<?= $ipt ?>"></div>
+                            </div>
+                            <button onclick="saveHetzner()" class="btn btn-outline-green w-full">Save Hetzner Settings</button>
+                        </div>
+
+                        <div class="card p-6">
+                            <h2 class="text-base font-bold mb-1 text-gray-900 dark:text-white">Auth0 SAML</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">SSO login &amp; logout for this panel. Get the IDP fields from Auth0 Dashboard &rarr; Applications &rarr; your app &rarr; Addons &rarr; SAML2 Web App &rarr; Usage tab, then paste the SP fields back into that addon's Settings tab.</p>
+                            <div class="space-y-4 mb-4">
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">sp entity id</label><input id="sm_sp_entity" value="<?= htmlspecialchars($samlRow['sp_entity_id']) ?>" class="<?= $ipt ?>"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">acs url (login)</label><input id="sm_acs" value="<?= htmlspecialchars($samlRow['acs_url']) ?>" class="<?= $ipt ?>"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">sls url (logout)</label><input id="sm_sls" value="<?= htmlspecialchars($samlRow['sls_url']) ?>" class="<?= $ipt ?>"></div>
+                                <div class="border-t border-gray-200 dark:border-line pt-4"><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">idp entity id</label><input id="sm_idp_entity" value="<?= htmlspecialchars($samlRow['idp_entity_id']) ?>" class="<?= $ipt ?>"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">idp sso url</label><input id="sm_idp_sso" value="<?= htmlspecialchars($samlRow['idp_sso_url']) ?>" class="<?= $ipt ?>"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">idp slo url</label><input id="sm_idp_slo" value="<?= htmlspecialchars($samlRow['idp_slo_url']) ?>" class="<?= $ipt ?>"></div>
+                                <div><label class="text-xs font-mono text-gray-500 dark:text-gray-400 mb-1 block">idp x509 certificate</label><textarea id="sm_idp_cert" rows="7" placeholder="-----BEGIN CERTIFICATE-----" class="<?= $ipt ?>"><?= htmlspecialchars($samlRow['idp_x509_cert']) ?></textarea></div>
+                            </div>
+                            <button onclick="saveSaml()" class="btn btn-outline-green w-full">Save Auth0 SAML Settings</button>
                         </div>
                     </div>
 
@@ -214,14 +271,20 @@ $pageTitle = 'NC Settings';
             }
         }
 
-        window.addEventListener('DOMContentLoaded',()=>{ checkSystemState(); setInterval(checkSystemState,3000); });
-        function switchTab(id){ document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); }
+        window.addEventListener('DOMContentLoaded',()=>{
+            checkSystemState(); setInterval(checkSystemState,3000);
+            const hash = location.hash.replace('#','');
+            if (hash && document.getElementById('tab-'+hash)) switchTab('tab-'+hash);
+        });
+        function switchTab(id){ document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===id)); }
         async function callApi(action, data={}){ try { const res=await fetch('settings.php',{method:'POST',body:JSON.stringify({token:TOKEN,action:action,...data})}); return await res.json(); } catch(e){ log('Error: '+e.message,'error'); return {error:e.message}; } }
 
         async function saveSmtp(){ const res=await callApi('save_smtp',{host:document.getElementById('smtp_host').value,port:document.getElementById('smtp_port').value,user:document.getElementById('smtp_user').value,pass:document.getElementById('smtp_pass').value,enc:document.getElementById('smtp_enc').value,email:document.getElementById('smtp_email').value,name:document.getElementById('smtp_name').value}); showResult(res); }
         async function saveProfile(){ const res=await callApi('save_profile',{new_user:document.getElementById('prof_user').value,new_email:document.getElementById('prof_email').value,new_pass:document.getElementById('prof_pass').value}); showResult(res); }
         async function viewLog(type){ const res=await callApi('get_server_log',{log_type:type}); log("--- LOG VIEW: "+type.toUpperCase()+" ---\n"+res.output,'system'); }
         async function saveLoaderTiming(){ const secs=parseFloat(document.getElementById('loader_secs').value)||0; const res=await callApi('save_ui_settings',{min_loader_ms:Math.round(secs*1000)}); showResult(res); }
+        async function saveHetzner(){ const res=await callApi('save_hetzner_settings',{api_token:document.getElementById('hz_token').value,server_id:document.getElementById('hz_server_id').value}); showResult(res); }
+        async function saveSaml(){ const res=await callApi('save_saml_settings',{sp_entity_id:document.getElementById('sm_sp_entity').value,acs_url:document.getElementById('sm_acs').value,sls_url:document.getElementById('sm_sls').value,idp_entity_id:document.getElementById('sm_idp_entity').value,idp_sso_url:document.getElementById('sm_idp_sso').value,idp_slo_url:document.getElementById('sm_idp_slo').value,idp_x509_cert:document.getElementById('sm_idp_cert').value}); showResult(res); }
 
         function showResult(res) {
              if(res.error) {

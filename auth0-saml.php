@@ -47,7 +47,7 @@ $pageTitle = 'Auth0 SAML';
 
             <?php if (!$idpConfigured): ?>
             <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-lg text-sm">
-                <strong>Not configured yet.</strong> Edit <span class="font-mono">saml_config.php</span> with your real Auth0 tenant SSO/SLO URLs and signing certificate before SSO will work.
+                <strong>Not configured yet.</strong> Add your real Auth0 tenant SSO/SLO URLs and signing certificate in <a href="/settings#integrations" class="underline font-semibold hover:text-amber-800 dark:hover:text-amber-300">Settings &rarr; Integrations</a> before SSO will work.
             </div>
             <?php endif; ?>
 
