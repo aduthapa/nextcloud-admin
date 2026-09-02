@@ -5,10 +5,13 @@
 // to highlight which sub-menu item is open.
 // Optional $showStatusBar = true to render the Idle/Busy pill + Force Unlock button.
 //
-// Items with a submenu render as an in-place expand/collapse group (button,
-// not a link) - clicking the parent only toggles its children, it never
-// navigates on its own. The active section is expanded on load; other
-// sections remember their open/closed state per-browser via localStorage.
+// Items with a submenu (Nextcloud, Admin Settings) drill down: clicking the
+// parent swaps the whole nav list to show ONLY that section's children plus
+// a "Back to Main Menu" row - it never navigates on its own, it's a client
+// side swap of what's visible in the sidebar. The page you're currently on
+// keeps rendering the correct swapped-in view on load (no flash of the
+// wrong list); clicking Back just swaps the sidebar back, it doesn't leave
+// the page you're on.
 $__nav = [
     'dashboard' => ['Dashboard', '/', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>'],
     'nextcloud' => ['Nextcloud', '/nextcloud.php', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>', [
@@ -30,13 +33,13 @@ $__nav = [
     'security'  => ['Security', '/security.php', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>'],
 ];
 $__activeParent = $activePage ?? '';
-$__activeChild = $activeChild ?? null;
+$__inSection = isset($__nav[$__activeParent][3]);
+$__activeChild = $activeChild ?? ($__inSection ? $__nav[$__activeParent][3][0][0] : null);
 ?>
 <style>
-    .sb-chevron { transition: transform .15s ease; }
-    .sb-toggle[aria-expanded="true"] .sb-chevron { transform: rotate(90deg); }
-    .sb-sub { overflow: hidden; }
-    .sb-sub a.sb-link { padding-left: 2.5rem; }
+    #sidebar-nav.nav-enter-right { opacity: 0; transform: translateX(14px); }
+    #sidebar-nav.nav-enter-left { opacity: 0; transform: translateX(-14px); }
+    #sidebar-nav.nav-enter-active { opacity: 1; transform: translateX(0); transition: opacity .28s ease-out, transform .28s ease-out; }
 </style>
 <aside class="w-60 shrink-0 h-screen sticky top-0 flex flex-col bg-white dark:bg-surface border-r border-gray-200 dark:border-line">
     <div class="h-16 flex items-center gap-2.5 px-5 border-b border-gray-200 dark:border-line shrink-0">
@@ -46,40 +49,40 @@ $__activeChild = $activeChild ?? null;
         <span class="font-bold text-sm tracking-tight text-gray-900 dark:text-white leading-none">NC<span class="text-[#0d9488] dark:text-accent-400"> Admin</span></span>
     </div>
 
-    <nav id="sidebar-nav" class="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-        <?php foreach ($__nav as $key => $item): ?>
-        <?php
-            [$label, $href, $iconPath] = $item;
-            $hasChildren = isset($item[3]);
-            $isActiveParent = $__activeParent === $key;
-            if (!$hasChildren):
-                $isActive = $isActiveParent;
-        ?>
-        <a href="<?= $href ?>" class="sb-link <?= $isActive ? 'active' : '' ?>">
-            <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $iconPath ?></svg>
-            <span><?= $label ?></span>
-        </a>
-        <?php else: $expanded = $isActiveParent; ?>
-        <div class="sb-group">
-            <button type="button" class="sb-toggle sb-link justify-between w-full <?= $isActiveParent ? 'active' : '' ?>" data-key="<?= $key ?>" aria-expanded="<?= $expanded ? 'true' : 'false' ?>">
+    <div class="flex-1 overflow-y-auto py-4 px-3">
+        <nav id="sidebar-nav" class="space-y-0.5">
+            <?php if ($__inSection): ?>
+            <button type="button" data-sb-back class="sb-link !text-accent-600 dark:!text-accent-400 font-semibold mb-2 w-full">
+                <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <span>Back to Main Menu</span>
+            </button>
+            <div class="px-3 pt-2 pb-1 section-eyebrow"><?= $__nav[$__activeParent][0] ?></div>
+            <?php foreach ($__nav[$__activeParent][3] as [$childKey, $childLabel, $childHref, $childIcon]): $isActive = $__activeChild === $childKey; ?>
+            <a href="<?= $childHref ?>" class="sb-link <?= $isActive ? 'active' : '' ?>">
+                <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $childIcon ?></svg>
+                <span><?= $childLabel ?></span>
+            </a>
+            <?php endforeach; ?>
+            <?php else: ?>
+            <?php foreach ($__nav as $key => $item): [$label, $href, $iconPath] = $item; $hasChildren = isset($item[3]); $isActive = ($activePage ?? '') === $key; ?>
+            <?php if ($hasChildren): ?>
+            <button type="button" data-sb-open="<?= $key ?>" class="sb-link justify-between w-full">
                 <span class="flex items-center gap-3">
                     <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $iconPath ?></svg>
                     <span><?= $label ?></span>
                 </span>
-                <svg class="sb-chevron shrink-0 opacity-50" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <svg class="shrink-0 opacity-50" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
-            <div class="sb-sub <?= $expanded ? '' : 'hidden' ?>" data-sub="<?= $key ?>">
-                <?php foreach ($item[3] as [$childKey, $childLabel, $childHref, $childIcon]): $isChildActive = $isActiveParent && $__activeChild === $childKey; ?>
-                <a href="<?= $childHref ?>" class="sb-link <?= $isChildActive ? 'active' : '' ?>">
-                    <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $childIcon ?></svg>
-                    <span><?= $childLabel ?></span>
-                </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
-        <?php endforeach; ?>
-    </nav>
+            <?php else: ?>
+            <a href="<?= $href ?>" class="sb-link <?= $isActive ? 'active' : '' ?>">
+                <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $iconPath ?></svg>
+                <span><?= $label ?></span>
+            </a>
+            <?php endif; ?>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </nav>
+    </div>
 
     <div class="p-3 border-t border-gray-200 dark:border-line space-y-2 shrink-0">
         <?php if (!empty($showStatusBar)): ?>
@@ -122,37 +125,79 @@ $__activeChild = $activeChild ?? null;
         document.documentElement.classList.toggle('no-loader-logo', !next);
     }
 
-    // Sidebar groups (Nextcloud, Admin Settings, ...) expand/collapse in
-    // place instead of navigating - only the child links underneath them
-    // are real navigation. The active group is always expanded server-side;
-    // this also restores any other group the user had manually opened, so
-    // it stays open across page loads.
-    document.querySelectorAll('#sidebar-nav .sb-toggle').forEach(btn => {
-        const key = btn.dataset.key;
-        const sub = document.querySelector(`#sidebar-nav .sb-sub[data-sub="${key}"]`);
-        if (!sub) return;
-        try {
-            if (btn.getAttribute('aria-expanded') !== 'true' && localStorage.getItem('navOpen_' + key) === '1') {
-                btn.setAttribute('aria-expanded', 'true');
-                sub.classList.remove('hidden');
-            }
-        } catch (err) {}
-        btn.addEventListener('click', () => {
-            const expanded = btn.getAttribute('aria-expanded') === 'true';
-            btn.setAttribute('aria-expanded', String(!expanded));
-            sub.classList.toggle('hidden', expanded);
-            try { localStorage.setItem('navOpen_' + key, expanded ? '0' : '1'); } catch (err) {}
-        });
-    });
+    // Sidebar sections (Nextcloud, Admin Settings, ...) drill down: clicking
+    // the parent swaps the sidebar to show ONLY that section's own list
+    // (plus a Back row) - it's a client-side re-render of the sidebar, not a
+    // navigation, so whatever page you're on keeps showing. Only clicking an
+    // actual page name below is a real link. Back just swaps the sidebar
+    // list back to the main menu, it doesn't send you anywhere either.
+    const SB_NAV = <?= json_encode(array_map(fn($item) => [
+        'label' => $item[0],
+        'children' => isset($item[3]) ? array_map(fn($c) => ['key' => $c[0], 'label' => $c[1], 'href' => $c[2], 'icon' => $c[3]], $item[3]) : null,
+    ], $__nav)) ?>;
+    const SB_MAIN_HTML = <?php ob_start(); ?><?php foreach ($__nav as $key => $item): [$label, $href, $iconPath] = $item; $hasChildren = isset($item[3]); $isActive = ($activePage ?? '') === $key; ?>
+<?php if ($hasChildren): ?>
+            <button type="button" data-sb-open="<?= $key ?>" class="sb-link justify-between w-full">
+                <span class="flex items-center gap-3">
+                    <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $iconPath ?></svg>
+                    <span><?= $label ?></span>
+                </span>
+                <svg class="shrink-0 opacity-50" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+<?php else: ?>
+            <a href="<?= $href ?>" class="sb-link <?= $isActive ? 'active' : '' ?>">
+                <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $iconPath ?></svg>
+                <span><?= $label ?></span>
+            </a>
+<?php endif; ?>
+<?php endforeach; $__mainHtml = ob_get_clean(); echo json_encode($__mainHtml); ?>;
 
-    // Mark outgoing sidebar navigation so the destination page (see
-    // partials/loader.php) skips the full boot loader - the sidebar itself
-    // doesn't change shape between pages any more, so there's nothing to
-    // wait for it to catch up with.
-    document.querySelectorAll('#sidebar-nav a.sb-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-            try { sessionStorage.setItem('navTransition', '1'); } catch (err) {}
+    function sbChildRow(c, active) {
+        return `<a href="${c.href}" class="sb-link ${active ? 'active' : ''}"><svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">${c.icon}</svg><span>${c.label}</span></a>`;
+    }
+    function sbSectionHtml(key) {
+        const sec = SB_NAV[key];
+        let html = `<button type="button" data-sb-back class="sb-link !text-accent-600 dark:!text-accent-400 font-semibold mb-2 w-full">
+            <svg class="shrink-0" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <span>Back to Main Menu</span>
+        </button>
+        <div class="px-3 pt-2 pb-1 section-eyebrow">${sec.label}</div>`;
+        sec.children.forEach(c => { html += sbChildRow(c, false); });
+        return html;
+    }
+
+    function sbBindLinks(nav) {
+        nav.querySelectorAll('a.sb-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                try { sessionStorage.setItem('navTransition', '1'); } catch (err) {}
+            });
         });
-    });
+    }
+    function sbBindOpeners(nav) {
+        nav.querySelectorAll('[data-sb-open]').forEach(btn => {
+            btn.addEventListener('click', () => sbSwap(nav, sbSectionHtml(btn.dataset.sbOpen), 'right'));
+        });
+        const back = nav.querySelector('[data-sb-back]');
+        if (back) back.addEventListener('click', () => sbSwap(nav, SB_MAIN_HTML, 'left'));
+    }
+    function sbSwap(nav, html, dir) {
+        nav.innerHTML = html;
+        sbBindLinks(nav);
+        sbBindOpeners(nav);
+        nav.classList.remove('nav-enter-right', 'nav-enter-left', 'nav-enter-active');
+        void nav.offsetWidth;
+        nav.classList.add(dir === 'right' ? 'nav-enter-right' : 'nav-enter-left');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            nav.classList.add('nav-enter-active');
+            setTimeout(() => nav.classList.remove('nav-enter-right', 'nav-enter-left', 'nav-enter-active'), 320);
+        }));
+    }
+
+    (function() {
+        const nav = document.getElementById('sidebar-nav');
+        if (!nav) return;
+        sbBindLinks(nav);
+        sbBindOpeners(nav);
+    })();
 </script>
